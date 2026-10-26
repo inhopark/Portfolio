@@ -16,16 +16,13 @@ class MISSIONSYSTEM_API AMonster : public AActor
 {
 	GENERATED_BODY()
 
-public:
-	AMonster();
-
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monster")
-	USphereComponent* CollisionSphere;
+	USphereComponent* CollisionSphere = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monster")
-	UStaticMeshComponent* MonsterMesh;
+	UStaticMeshComponent* MonsterMesh = nullptr;
 
 	// 초당 이동 속도 (월드 -X 방향, 화면상으로는 위에서 아래로 내려오는 방향)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
@@ -47,13 +44,23 @@ private:
 	// 오브젝트 풀에 중복으로 반환되는 것을 막기 위한 가드
 	bool bIsActive = false;
 
+public:
+
+	UPROPERTY()
+	FOnMonsterDeactivated OnDeactivated;
+
+public:
+
+	AMonster();
+
 protected:
 
 	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void OnCollisionSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnCollisionSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 
@@ -63,6 +70,4 @@ public:
 	// 오브젝트 풀로 반환할 때 호출 — 숨김, 충돌/틱 비활성화, OnDeactivated 브로드캐스트
 	void Deactivate();
 
-	UPROPERTY()
-	FOnMonsterDeactivated OnDeactivated;
-};
+};// end class

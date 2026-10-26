@@ -13,6 +13,7 @@ enum class EMissionUnique : uint8
 UENUM(BlueprintType)
 enum class EMissionState : uint8
 {
+	None,
 	Ready,
 	InProgress,
 	Succeeded,

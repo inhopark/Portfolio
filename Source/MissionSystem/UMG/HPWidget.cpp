@@ -8,18 +8,21 @@ void UHPWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (AMissionSystemCharacter* PlayerCharacter = Cast<AMissionSystemCharacter>(UGameplayStatics::GetPlayerPawn(this, 0)))
+	AMissionSystemCharacter* PlayerCharacter = Cast<AMissionSystemCharacter>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if(PlayerCharacter == nullptr)
 	{
-		PlayerCharacter->OnHPChanged.AddDynamic(this, &UHPWidget::HandleHPChanged);
+		return;
+	}
 
-		SetHP(PlayerCharacter->GetCurrentHP(), PlayerCharacter->GetMaxHP());
+	PlayerCharacter->OnHPChanged.AddDynamic(this, &UHPWidget::HandleHPChanged);
 
-		// 위젯이 새로 생성된 시점엔 보간 없이 바로 현재 값으로 표시
-		DisplayedPercent = TargetPercent;
-		if (HPBar != nullptr)
-		{
-			HPBar->SetPercent(DisplayedPercent);
-		}
+	SetHP(PlayerCharacter->GetCurrentHP(), PlayerCharacter->GetMaxHP());
+
+	// 위젯이 새로 생성된 시점엔 보간 없이 바로 현재 값으로 표시
+	DisplayedPercent = TargetPercent;
+	if(HPBar != nullptr)
+	{
+		HPBar->SetPercent(DisplayedPercent);
 	}
 }
 
@@ -27,16 +30,11 @@ void UHPWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (HPBar != nullptr && FMath::IsNearlyEqual(DisplayedPercent, TargetPercent, KINDA_SMALL_NUMBER) == false)
+	if(HPBar != nullptr && FMath::IsNearlyEqual(DisplayedPercent, TargetPercent, KINDA_SMALL_NUMBER) == false)
 	{
 		DisplayedPercent = FMath::FInterpTo(DisplayedPercent, TargetPercent, InDeltaTime, BarInterpSpeed);
 		HPBar->SetPercent(DisplayedPercent);
 	}
-}
-
-void UHPWidget::HandleHPChanged(float CurrentHP, float MaxHP)
-{
-	SetHP(CurrentHP, MaxHP);
 }
 
 void UHPWidget::SetHP(float CurrentHP, float MaxHP)
@@ -44,8 +42,13 @@ void UHPWidget::SetHP(float CurrentHP, float MaxHP)
 	// 게이지는 목표치만 갱신 -> NativeTick에서 서서히 보간
 	TargetPercent = MaxHP > 0.0f ? CurrentHP / MaxHP : 0.0f;
 
-	if (HPText != nullptr)
+	if(HPText != nullptr)
 	{
 		HPText->SetText(FText::FromString(FString::Printf(TEXT("%d / %d"), FMath::RoundToInt(CurrentHP), FMath::RoundToInt(MaxHP))));
 	}
+}
+
+void UHPWidget::HandleHPChanged(float CurrentHP, float MaxHP)
+{
+	SetHP(CurrentHP, MaxHP);
 }

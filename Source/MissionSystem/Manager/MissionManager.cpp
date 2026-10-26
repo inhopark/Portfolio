@@ -12,22 +12,23 @@ void UMissionManager::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	MissionFactory = NewObject<UMissionFactory>(this);
+	MissionFactory->Initialize();
 }
 
 void UMissionManager::RequestMission(EMissionUnique MissionUnique)
 {
 	// 미션진행 중일경우 실패.
-	if (IsMissionRequest() == false)
+	if(IsMissionRequest() == false)
 	{
-		UE_LOG(LogTemp, Log, TEXT("## MissionManager::RequestMission ## Mission is already in progress. Cannot request a new mission."));
+		UE_LOG(LogTemp, Log, TEXT("## MissionManager ## RequestMission ## Warning : Mission Already In Progress ## MissionUnique : %s"), *UEnum::GetValueAsString(MissionUnique));
 		return;
 	}
 
 	// 미션 진행
-	if (MissionFactory != nullptr)
+	if(MissionFactory != nullptr)
 	{
 		CurrentMission = MissionFactory->CreateMission(this, MissionUnique);
-		if (CurrentMission != nullptr)
+		if(CurrentMission != nullptr)
 		{
 			// 미션 상태 변경 이벤트 바인딩
 			CurrentMission->OnMissionStateChanged.AddDynamic(this, &UMissionManager::OnMissionStateChanged);
@@ -38,7 +39,7 @@ void UMissionManager::RequestMission(EMissionUnique MissionUnique)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("## MissionManager::RequestMission ## Mission Factory is not initialized. Cannot create mission."));
+		UE_LOG(LogTemp, Error, TEXT("## MissionManager ## RequestMission ## Mission Factory Not Initialized ## MissionUnique : %s"), *UEnum::GetValueAsString(MissionUnique));
 	}
 }
 
@@ -53,7 +54,7 @@ void UMissionManager::RegisterMainMissionWidget(UMainMissionWidget* Widget)
 	MainMissionWidget = Widget;
 
 	// 버튼 콜백 함수 등록.
-	if (MainMissionWidget != nullptr)
+	if(MainMissionWidget != nullptr)
 	{
 		MainMissionWidget->OnMissionButtonAction.AddDynamic(this, &UMissionManager::HandleMissionButtonAction);
 	}
@@ -64,7 +65,7 @@ void UMissionManager::RegisterMissionResultWidgets(UMissionResultWidget* ResultW
 	MissionResultWidget = ResultWidget;
 
 	// 확인 버튼 콜백 함수 등록.
-	if (ResultWidget != nullptr)
+	if(ResultWidget != nullptr)
 	{
 		ResultWidget->OnConfirmed.AddDynamic(this, &UMissionManager::HandleMissionResultConfirmed);
 	}
@@ -72,19 +73,16 @@ void UMissionManager::RegisterMissionResultWidgets(UMissionResultWidget* ResultW
 
 void UMissionManager::ShowMainMissionWidget(EMissionUnique MissionUnique, ANPC* InNPC)
 {
-	if (MainMissionWidget == nullptr)
+	if(MainMissionWidget == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("## MissionManager::ShowMainMissionWidget ## MainMissionWidget is not registered. Cannot show mission widget."));
+		UE_LOG(LogTemp, Error, TEXT("## MissionManager ## ShowMainMissionWidget ## MainMissionWidget Not Registered ## MissionUnique : %s"), *UEnum::GetValueAsString(MissionUnique));
 		return;
 	}
 
 	// 이미 미션이 진행 중이면 대화창을 띄우지 않음
-	if (CurrentMission != nullptr)
+	if(CurrentMission != nullptr && CurrentMission->GetMissionState() == EMissionState::InProgress)
 	{
-		if (CurrentMission->GetMissionState() == EMissionState::InProgress)
-		{
-			return;
-		}
+		return;
 	}
 
 	CurrentMissionNPC = InNPC;
@@ -95,7 +93,7 @@ void UMissionManager::ShowMainMissionWidget(EMissionUnique MissionUnique, ANPC* 
 	MainMissionWidget->SetVisibility(ESlateVisibility::Visible);
 
 	// 현재 미션 진행 중.
-	if (CurrentMission == nullptr)
+	if(CurrentMission == nullptr)
 	{
 		RequestMission(MissionUnique);
 	}
@@ -106,7 +104,7 @@ void UMissionManager::HideMainMissionWidget()
 	// 마우스 커서 모드 해제
 	SetUICursorMode(false);
 
-	if (MainMissionWidget != nullptr)
+	if(MainMissionWidget != nullptr)
 	{
 		MainMissionWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
@@ -114,70 +112,76 @@ void UMissionManager::HideMainMissionWidget()
 
 void UMissionManager::SetUICursorMode(bool bShow)
 {
-	if (UWorld* World = GetWorld())
+	UWorld* World = GetWorld();
+	if(World == nullptr)
 	{
-		APlayerController* PC = World->GetFirstPlayerController();
-		if (PC != nullptr)
-		{
-			PC->bShowMouseCursor = bShow;
-			PC->SetIgnoreLookInput(bShow);
-
-			// 미션 창 열릴 때(bShow == true) 이동 잠금, 닫힐 때(bShow == false) 이동 재개
-			PC->SetIgnoreMoveInput(bShow);
-		}
+		return;
 	}
+
+	APlayerController* PlayerController = World->GetFirstPlayerController();
+	if(PlayerController == nullptr)
+	{
+		return;
+	}
+
+	PlayerController->bShowMouseCursor = bShow;
+	PlayerController->SetIgnoreLookInput(bShow);
+
+	// 미션 창 열릴 때(bShow == true) 이동 잠금, 닫힐 때(bShow == false) 이동 재개
+	PlayerController->SetIgnoreMoveInput(bShow);
+
+	UE_LOG(LogTemp, Log, TEXT("## MissionManager ## SetUICursorMode ## bShow : %s"), *LexToString(bShow));
 }
 
 void UMissionManager::HandleMissionButtonAction(EMissionButtonAction Action)
 {
-	if (CurrentMission == nullptr)
+	if(CurrentMission == nullptr)
 	{
 		return;
 	}
 
 	// Ready 상태에서만 Left/Right = Agree/Disagree로 처리. InProgress 중에는 버튼으로
 	// 강제 종료하지 않음 — 미션은 오직 디펜스 미니게임 결과(생존 성공/HP 0)로만 끝남.
+	if(CurrentMission->GetMissionState() != EMissionState::Ready)
+	{
+		return;
+	}
+
 	switch (Action)
 	{
 		case EMissionButtonAction::Left:
 			{
-				if (CurrentMission->GetMissionState() == EMissionState::Ready)
+				// 미션 시작 시 NPC 화면에서 사라지게 처리 (숨김 및 충돌 끄기)
+				if(CurrentMissionNPC != nullptr)
 				{
-					// 미션 시작 시 NPC 화면에서 사라지게 처리 (숨김 및 충돌 끄기)
-					if (CurrentMissionNPC != nullptr)
-					{
-						CurrentMissionNPC->SetActorHiddenInGame(true);
-						CurrentMissionNPC->SetActorEnableCollision(false);
-					}
-
-					// 플레이어 쿼터뷰 디펜스 모드로 전환
-					AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
-					if (MissionCharacter != nullptr)
-					{
-						MissionCharacter->SetPlayMode(ECharacterPlayMode::DefenseMode);
-					}
-
-					// 미션 시작 처리. 디펜스 미니게임을 갖는 미션(UDefenseMinigameMission)이라면
-					// 이 안에서(EnterInProgressState) 몬스터 스폰/생존 타이머가 알아서 시작됨
-					CurrentMission->AgreeMission(MissionCharacter);
-
-					SetDefenseHUDVisible(true);
-
-					// 미션 대화창 닫고 마우스 숨기며 이동(좌우) 활성화
-					HideMainMissionWidget();
+					CurrentMissionNPC->SetActorHiddenInGame(true);
+					CurrentMissionNPC->SetActorEnableCollision(false);
 				}
+
+				// 플레이어 쿼터뷰 디펜스 모드로 전환
+				AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
+				if(MissionCharacter != nullptr)
+				{
+					MissionCharacter->SetPlayMode(ECharacterPlayMode::DefenseMode);
+				}
+
+				// 미션 시작 처리. 디펜스 미니게임을 갖는 미션(UDefenseMinigameMission)이라면
+				// 이 안에서(OnInProgress) 몬스터 스폰/생존 타이머가 알아서 시작됨
+				CurrentMission->AgreeMission(MissionCharacter);
+
+				SetDefenseHUDVisible(true);
+
+				// 미션 대화창 닫고 마우스 숨기며 이동(좌우) 활성화
+				HideMainMissionWidget();
 			}
 			break;
 		case EMissionButtonAction::Right:
 			{
-				if (CurrentMission->GetMissionState() == EMissionState::Ready)
-				{
-					// 미션 취소 처리.
-					CurrentMission->DisagreeMission();
+				// 미션 취소 처리.
+				CurrentMission->DisagreeMission();
 
-					// 일단 미션 초기화 시킴.
-					ClearCurrentMission();
-				}
+				// 일단 미션 초기화 시킴.
+				ClearCurrentMission();
 			}
 			break;
 	}
@@ -189,18 +193,26 @@ void UMissionManager::OnMissionStateChanged(EMissionState NewState)
 	{
 		case EMissionState::Ready:
 		case EMissionState::InProgress:
-			if (MainMissionWidget != nullptr)
 			{
-				MainMissionWidget->SetWidgetState(NewState);
+				if(MainMissionWidget != nullptr)
+				{
+					MainMissionWidget->SetWidgetState(NewState);
+				}
 			}
 			break;
 		case EMissionState::Succeeded:
 		case EMissionState::Failed:
-			// 3인칭 모드 복귀 전, 디펜스 모드 종료 시 HP/타이머 위젯 다시 숨김
-			SetDefenseHUDVisible(false);
+			{
+				// 3인칭 모드 복귀 전, 디펜스 모드 종료 시 HP/타이머 위젯 다시 숨김
+				SetDefenseHUDVisible(false);
 
-			// 결과 창
-			ShowMissionResultWidget(NewState);
+				// 결과 창
+				ShowMissionResultWidget(NewState);
+			}
+			break;
+		default:
+			{
+			}
 			break;
 	}
 
@@ -209,7 +221,7 @@ void UMissionManager::OnMissionStateChanged(EMissionState NewState)
 
 void UMissionManager::ShowMissionResultWidget(EMissionState NewState)
 {
-	if (MissionResultWidget == nullptr)
+	if(MissionResultWidget == nullptr)
 	{
 		return;
 	}
@@ -222,13 +234,14 @@ void UMissionManager::ShowMissionResultWidget(EMissionState NewState)
 
 void UMissionManager::HandleMissionResultConfirmed()
 {
-	if (MissionResultWidget != nullptr)
+	if(MissionResultWidget != nullptr)
 	{
 		MissionResultWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 
 	// 체력을 회복시켜 다음 미션은 처음 상태로 시작하도록 함
-	if (AMissionSystemCharacter* MissionCharacter = GetMissionCharacter())
+	AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
+	if(MissionCharacter != nullptr)
 	{
 		MissionCharacter->ResetHP();
 	}
@@ -239,7 +252,7 @@ void UMissionManager::HandleMissionResultConfirmed()
 
 void UMissionManager::ClearCurrentMission()
 {
-	if (CurrentMission != nullptr)
+	if(CurrentMission != nullptr)
 	{
 		CurrentMission->OnMissionStateChanged.RemoveDynamic(this, &UMissionManager::OnMissionStateChanged);
 
@@ -248,27 +261,16 @@ void UMissionManager::ClearCurrentMission()
 
 	// 플레이어를 PlayerStart 위치로 되돌리고 3인칭 모드로 복귀.
 	// NPC를 다시 활성화하기 전에 이동시켜, 같은 자리에서 NPC와 바로 재충돌(재오버랩)하는 버그를 방지함
-	if (AMissionSystemCharacter* MissionCharacter = GetMissionCharacter())
+	AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
+	if(MissionCharacter != nullptr)
 	{
-		if (UWorld* World = GetWorld())
-		{
-			if (AGameModeBase* GameMode = World->GetAuthGameMode())
-			{
-				if (APlayerController* PC = World->GetFirstPlayerController())
-				{
-					if (AActor* PlayerStart = GameMode->FindPlayerStart(PC))
-					{
-						MissionCharacter->SetActorLocationAndRotation(PlayerStart->GetActorLocation(), PlayerStart->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
-					}
-				}
-			}
-		}
+		MovePlayerToPlayerStart(MissionCharacter);
 
 		MissionCharacter->SetPlayMode(ECharacterPlayMode::Normal);
 	}
 
 	// 미션 종료 시 숨겨졌던 NPC 다시 등장
-	if (CurrentMissionNPC != nullptr)
+	if(CurrentMissionNPC != nullptr)
 	{
 		CurrentMissionNPC->SetActorHiddenInGame(false);
 		CurrentMissionNPC->SetActorEnableCollision(true);
@@ -282,9 +284,9 @@ void UMissionManager::HandlePlayerDefeated()
 {
 	// 진행 중이던 미션을 실패 처리 -> 실패 결과창 노출. 초기 상태로의 리셋은
 	// HandleMissionResultConfirmed에서 플레이어가 확인 버튼을 누를 때 처리됨.
-	// (디펜스 미니게임 정지는 미션 자신의 EnterFailedState()에서 동기적으로 처리되므로
+	// (디펜스 미니게임 정지는 미션 자신의 OnFailed()에서 동기적으로 처리되므로
 	// 사망 즉시 추가 피해가 들어가지 않음)
-	if (CurrentMission != nullptr)
+	if(CurrentMission != nullptr)
 	{
 		CurrentMission->FailedMission();
 	}
@@ -292,38 +294,86 @@ void UMissionManager::HandlePlayerDefeated()
 
 float UMissionManager::GetMissionRemainingTime() const
 {
-	return CurrentMission != nullptr ? CurrentMission->GetMinigameRemainingTime() : -1.0f;
+	if(CurrentMission == nullptr)
+	{
+		return -1.0f;
+	}
+
+	return CurrentMission->GetMinigameRemainingTime();
 }
 
 float UMissionManager::GetMissionTotalDuration() const
 {
-	return CurrentMission != nullptr ? CurrentMission->GetMinigameTotalDuration() : 0.0f;
+	if(CurrentMission == nullptr)
+	{
+		return 0.0f;
+	}
+
+	return CurrentMission->GetMinigameTotalDuration();
 }
 
 void UMissionManager::SetDefenseHUDVisible(bool bVisible)
 {
-	if (AMainPlayerController* MainPC = GetMainPlayerController())
+	AMainPlayerController* MainPlayerController = GetMainPlayerController();
+	if(MainPlayerController != nullptr)
 	{
-		MainPC->SetDefenseHUDVisible(bVisible);
+		MainPlayerController->SetDefenseHUDVisible(bVisible);
 	}
+}
+
+void UMissionManager::MovePlayerToPlayerStart(AMissionSystemCharacter* MissionCharacter)
+{
+	if(MissionCharacter == nullptr)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if(World == nullptr)
+	{
+		return;
+	}
+
+	AGameModeBase* GameMode = World->GetAuthGameMode();
+	if(GameMode == nullptr)
+	{
+		return;
+	}
+
+	APlayerController* PlayerController = World->GetFirstPlayerController();
+	if(PlayerController == nullptr)
+	{
+		return;
+	}
+
+	AActor* PlayerStart = GameMode->FindPlayerStart(PlayerController);
+	if(PlayerStart == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("## MissionManager ## MovePlayerToPlayerStart ## Warning : PlayerStart Not Found"));
+		return;
+	}
+
+	MissionCharacter->SetActorLocationAndRotation(PlayerStart->GetActorLocation(), PlayerStart->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 AMissionSystemCharacter* UMissionManager::GetMissionCharacter() const
 {
-	if (AMainPlayerController* MainPC = GetMainPlayerController())
+	AMainPlayerController* MainPlayerController = GetMainPlayerController();
+	if(MainPlayerController == nullptr)
 	{
-		return Cast<AMissionSystemCharacter>(MainPC->GetPawn());
+		return nullptr;
 	}
 
-	return nullptr;
+	return Cast<AMissionSystemCharacter>(MainPlayerController->GetPawn());
 }
 
 AMainPlayerController* UMissionManager::GetMainPlayerController() const
 {
-	if (const UWorld* World = GetWorld())
+	const UWorld* World = GetWorld();
+	if(World == nullptr)
 	{
-		return Cast<AMainPlayerController>(World->GetFirstPlayerController());
+		return nullptr;
 	}
 
-	return nullptr;
+	return Cast<AMainPlayerController>(World->GetFirstPlayerController());
 }

@@ -10,34 +10,19 @@ void UBaseMission::Initialize()
 	SetState(EMissionState::Ready);
 }
 
-void UBaseMission::SetState(EMissionState NewState)
-{
-	MissionState = NewState;
-
-	switch (MissionState)
-	{
-		case EMissionState::Ready:      EnterReadyState(); break;
-		case EMissionState::InProgress: EnterInProgressState();  break;
-		case EMissionState::Succeeded:  EnterSucceededState();  break;
-		case EMissionState::Failed:     EnterFailedState();  break;
-	}
-
-	OnMissionStateChanged.Broadcast(NewState);
-}
-
-void UBaseMission::EnterReadyState()
+void UBaseMission::OnReady()
 {
 }
 
-void UBaseMission::EnterInProgressState()
+void UBaseMission::OnInProgress()
 {
 }
 
-void UBaseMission::EnterSucceededState()
+void UBaseMission::OnSucceeded()
 {
 }
 
-void UBaseMission::EnterFailedState()
+void UBaseMission::OnFailed()
 {
 }
 
@@ -47,11 +32,6 @@ void UBaseMission::AgreeMission(AMissionSystemCharacter* Player)
 
 	// 미션 진행 중으로 변경.
 	SetState(EMissionState::InProgress);
-}
-
-AMissionSystemCharacter* UBaseMission::GetMissionPlayer() const
-{
-	return MissionPlayer.Get();
 }
 
 void UBaseMission::DisagreeMission()
@@ -66,4 +46,54 @@ void UBaseMission::SuccessMission()
 void UBaseMission::FailedMission()
 {
 	SetState(EMissionState::Failed);
+}
+
+AMissionSystemCharacter* UBaseMission::GetMissionPlayer() const
+{
+	return MissionPlayer.Get();
+}
+
+bool UBaseMission::SetState(EMissionState NewState)
+{
+	if(MissionState == NewState)
+	{
+		UE_LOG(LogTemp, Log, TEXT("## BaseMission ## SetState ## Warning : Already In State ## Mission : %s ## State : %s"), *GetClass()->GetName(), *UEnum::GetValueAsString(NewState));
+		return false;
+	}
+
+	MissionState = NewState;
+
+	UE_LOG(LogTemp, Log, TEXT("## BaseMission ## SetState ## Mission : %s ## State : %s"), *GetClass()->GetName(), *UEnum::GetValueAsString(MissionState));
+
+	switch (MissionState)
+	{
+		case EMissionState::Ready:
+			{
+				OnReady();
+			}
+			break;
+		case EMissionState::InProgress:
+			{
+				OnInProgress();
+			}
+			break;
+		case EMissionState::Succeeded:
+			{
+				OnSucceeded();
+			}
+			break;
+		case EMissionState::Failed:
+			{
+				OnFailed();
+			}
+			break;
+		default:
+			{
+			}
+			break;
+	}
+
+	OnMissionStateChanged.Broadcast(NewState);
+
+	return true;
 }

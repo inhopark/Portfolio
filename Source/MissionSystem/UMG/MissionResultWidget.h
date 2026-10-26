@@ -17,27 +17,26 @@ class MISSIONSYSTEM_API UMissionResultWidget : public UUserWidget
 protected:
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* MissionTitleText;   // 결과 제목 텍스트 ("미션 성공"/"미션 실패")
+	class UTextBlock* MissionTitleText = nullptr;   // 결과 제목 텍스트 ("미션 성공"/"미션 실패")
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* LeftButton;            // 확인 버튼으로 재사용
+	class UButton* LeftButton = nullptr;            // 확인 버튼으로 재사용
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* LeftButtonTextBlock;  // 확인 버튼 텍스트
+	class UTextBlock* LeftButtonTextBlock = nullptr;  // 확인 버튼 텍스트
+
+private:
+
+	EMissionState ResultState = EMissionState::None;
 
 public:
 
 	UPROPERTY()
 	FOnMissionResultConfirmed OnConfirmed;
 
-private:
+public:
 
-	EMissionState ResultState;
-
-private:
-
-	void SetResultTitle(const FText& NewTitle);
-
+	virtual void NativeConstruct() override;
 
 public:
 
@@ -46,8 +45,8 @@ public:
 	UFUNCTION()
 	void OnConfirmButtonClicked();
 
-public:
+private:
 
-	virtual void NativeConstruct() override;
+	void SetResultTitle(const FText& NewTitle);
 
-};
+};// end class

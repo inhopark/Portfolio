@@ -15,17 +15,17 @@ class MISSIONSYSTEM_API UMainMissionWidget : public UUserWidget
 protected:
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* MissionTitleText;  // 미션 제목 텍스트
+	class UTextBlock* MissionTitleText = nullptr;  // 미션 제목 텍스트
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* LeftButton;           // 왼쪽 버튼
+	class UButton* LeftButton = nullptr;           // 왼쪽 버튼
 	UPROPERTY(meta = (BindWidget))
-	class UButton* RightButton;          // 오른쪽 버튼
+	class UButton* RightButton = nullptr;          // 오른쪽 버튼
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* LeftButtonTextBlock;   // 왼쪽 버튼 텍스트
+	class UTextBlock* LeftButtonTextBlock = nullptr;   // 왼쪽 버튼 텍스트
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* RightButtonTextBlock;  // 오른쪽 버튼 텍스트
+	class UTextBlock* RightButtonTextBlock = nullptr;  // 오른쪽 버튼 텍스트
 
 public:
 
@@ -34,9 +34,13 @@ public:
 
 public:
 
+	virtual void NativeConstruct() override;
+
+public:
+
+	void SetWidgetState(EMissionState MissionState);
 	void SetMissionTitle(const FText& NewTitle);  // 미션 제목 설정
 	void SetButtonTexts(const FText& LeftText, const FText& RightText);  // 버튼 텍스트 설정
-	void SetWidgetState(EMissionState MissionState);
 
 	UFUNCTION()
 	void OnLeftButtonClicked();
@@ -44,8 +48,4 @@ public:
 	UFUNCTION()
 	void OnRightButtonClicked();
 
-public:
-
-	virtual void NativeConstruct() override;
-
-};
+};// end class

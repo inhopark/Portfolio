@@ -6,12 +6,12 @@ void UMainMissionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (LeftButton)
+	if(LeftButton != nullptr)
 	{
 		LeftButton->OnClicked.AddDynamic(this, &UMainMissionWidget::OnLeftButtonClicked);
 	}
 
-	if (RightButton)
+	if(RightButton != nullptr)
 	{
 		RightButton->OnClicked.AddDynamic(this, &UMainMissionWidget::OnRightButtonClicked);
 	}
@@ -19,37 +19,46 @@ void UMainMissionWidget::NativeConstruct()
 
 void UMainMissionWidget::SetWidgetState(EMissionState MissionState)
 {
+	UE_LOG(LogTemp, Log, TEXT("## MainMissionWidget ## SetWidgetState ## MissionState : %s"), *UEnum::GetValueAsString(MissionState));
+
 	switch (MissionState)
 	{
 		case EMissionState::Ready:
-			SetMissionTitle(WAIT_FOR_MISSION);
-			SetButtonTexts(MISSION_AGREE_BUTTON_TEXT, MISSION_DISAGREE_BUTTON_TEXT);
+			{
+				SetMissionTitle(WAIT_FOR_MISSION);
+				SetButtonTexts(MISSION_AGREE_BUTTON_TEXT, MISSION_DISAGREE_BUTTON_TEXT);
+			}
 			break;
 		case EMissionState::InProgress:
-			SetMissionTitle(MISSION_IN_PROGRESS);
-			SetButtonTexts(MISSION_SUCCESS_BUTTON_TEXT, MISSION_FAILED_BUTTON_TEXT);
+			{
+				SetMissionTitle(MISSION_IN_PROGRESS);
+				SetButtonTexts(MISSION_SUCCESS_BUTTON_TEXT, MISSION_FAILED_BUTTON_TEXT);
+			}
 			break;
 		default:
-			// 미션 성공/실패 시에는 결과 전용 위젯(WBP_MainMissionResult)이 대신 표시되며,
-			// 이 대화창 자체는 MissionManager에 의해 숨겨지므로 별도 처리가 필요 없음.
+			{
+				// 미션 성공/실패 시에는 결과 전용 위젯(WBP_MainMissionResult)이 대신 표시되며,
+				// 이 대화창 자체는 MissionManager에 의해 숨겨지므로 별도 처리가 필요 없음.
+			}
 			break;
 	}
 
 	// 버튼 보여질지 선택.
-	bool bButtonVisible = MissionState == EMissionState::Ready || MissionState == EMissionState::InProgress;
-	if (LeftButton)
+	const bool bShowButtons = MissionState == EMissionState::Ready || MissionState == EMissionState::InProgress;
+	const ESlateVisibility ButtonVisibility = bShowButtons == true ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+	if(LeftButton != nullptr)
 	{
-		LeftButton->SetVisibility(bButtonVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		LeftButton->SetVisibility(ButtonVisibility);
 	}
-	if (RightButton)
+	if(RightButton != nullptr)
 	{
-		RightButton->SetVisibility(bButtonVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		RightButton->SetVisibility(ButtonVisibility);
 	}
 }
 
 void UMainMissionWidget::SetMissionTitle(const FText& NewTitle)
 {
-	if (MissionTitleText)
+	if(MissionTitleText != nullptr)
 	{
 		MissionTitleText->SetText(NewTitle);
 	}
@@ -57,12 +66,12 @@ void UMainMissionWidget::SetMissionTitle(const FText& NewTitle)
 
 void UMainMissionWidget::SetButtonTexts(const FText& LeftText, const FText& RightText)
 {
-	if (LeftButtonTextBlock)
+	if(LeftButtonTextBlock != nullptr)
 	{
 		LeftButtonTextBlock->SetVisibility(ESlateVisibility::Visible);
 		LeftButtonTextBlock->SetText(LeftText);
 	}
-	if (RightButtonTextBlock)
+	if(RightButtonTextBlock != nullptr)
 	{
 		RightButtonTextBlock->SetVisibility(ESlateVisibility::Visible);
 		RightButtonTextBlock->SetText(RightText);

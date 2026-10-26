@@ -1,29 +1,29 @@
-#include "MissionAct1Chapter1.h"
+﻿#include "MissionAct1Chapter1.h"
 
-void UMissionAct1Chapter1::EnterReadyState()
+void UMissionAct1Chapter1::OnReady()
 {
-	Super::EnterReadyState();
+	Super::OnReady();
 
-	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## 준비 상태 진입"));
+	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## OnReady ## 준비 상태 진입"));
 }
 
-void UMissionAct1Chapter1::EnterInProgressState()
+void UMissionAct1Chapter1::OnInProgress()
 {
-	Super::EnterInProgressState();
+	Super::OnInProgress();
 
-	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## 진행 상태 진입"));
+	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## OnInProgress ## 진행 상태 진입"));
 }
 
-void UMissionAct1Chapter1::EnterSucceededState()
+void UMissionAct1Chapter1::OnSucceeded()
 {
-	Super::EnterSucceededState();
+	Super::OnSucceeded();
 
-	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## 성공 상태 진입"));
+	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## OnSucceeded ## 성공 상태 진입"));
 }
 
-void UMissionAct1Chapter1::EnterFailedState()
+void UMissionAct1Chapter1::OnFailed()
 {
-	Super::EnterFailedState();
+	Super::OnFailed();
 
-	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## 실패 상태 진입"));
+	UE_LOG(LogTemp, Log, TEXT("## MissionAct1Chapter1 ## OnFailed ## 실패 상태 진입"));
 }

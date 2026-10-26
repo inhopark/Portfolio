@@ -15,10 +15,10 @@ class MISSIONSYSTEM_API UHPWidget : public UUserWidget
 protected:
 
 	UPROPERTY(meta = (BindWidget))
-	class UProgressBar* HPBar;   // HP 게이지
+	class UProgressBar* HPBar = nullptr;   // HP 게이지
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* HPText;    // "현재HP / 최대HP" 텍스트
+	class UTextBlock* HPText = nullptr;    // "현재HP / 최대HP" 텍스트
 
 	// 게이지가 목표치까지 보간되는 속도 (클수록 빠르게 따라감)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
@@ -29,13 +29,18 @@ private:
 	float TargetPercent = 1.0f;
 	float DisplayedPercent = 1.0f;
 
-	UFUNCTION()
-	void HandleHPChanged(float CurrentHP, float MaxHP);
+public:
+
+	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
 
 	void SetHP(float CurrentHP, float MaxHP);
 
-	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-};
+private:
+
+	UFUNCTION()
+	void HandleHPChanged(float CurrentHP, float MaxHP);
+
+};// end class

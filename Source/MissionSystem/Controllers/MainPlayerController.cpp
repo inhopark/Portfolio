@@ -15,7 +15,14 @@ void AMainPlayerController::BeginPlay()
 	HPWidgetInstance = CreateAndAddWidget(HPWidgetClass, TEXT("/Game/UMG/WBP_HP.WBP_HP_C"));
 	MissionTimerWidgetInstance = CreateAndAddWidget(MissionTimerWidgetClass, TEXT("/Game/UMG/WBP_MissionTimer.WBP_MissionTimer_C"));
 
-	if (UMissionManager* MissionManager = GetGameInstance()->GetSubsystem<UMissionManager>())
+	UGameInstance* GameInstance = GetGameInstance();
+	if(GameInstance == nullptr)
+	{
+		return;
+	}
+
+	UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>();
+	if(MissionManager != nullptr)
 	{
 		MissionManager->RegisterMainMissionWidget(MainMissionWidgetInstance);
 		MissionManager->RegisterMissionResultWidgets(MissionResultWidgetInstance);
@@ -26,22 +33,31 @@ void AMainPlayerController::SetDefenseHUDVisible(bool bVisible)
 {
 	// 버튼이 없는 순수 표시용 위젯들이므로 HitTestInvisible로 노출해
 	// 다른 위젯(미션 결과창 등)의 클릭을 가로채지 않도록 함
-	const ESlateVisibility TargetVisibility = bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden;
+	const ESlateVisibility TargetVisibility = bVisible == true ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden;
 
-	if (HPWidgetInstance != nullptr)
+	if(HPWidgetInstance != nullptr)
 	{
 		HPWidgetInstance->SetVisibility(TargetVisibility);
 	}
 
-	if (MissionTimerWidgetInstance != nullptr)
+	if(MissionTimerWidgetInstance != nullptr)
 	{
 		MissionTimerWidgetInstance->SetVisibility(TargetVisibility);
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("## MainPlayerController ## SetDefenseHUDVisible ## bVisible : %s"), *LexToString(bVisible));
 }
 
 void AMainPlayerController::ToggleAutoCycleMode()
 {
-	if (UMissionAutoCycleController* AutoCycleController = GetGameInstance()->GetSubsystem<UMissionAutoCycleController>())
+	UGameInstance* GameInstance = GetGameInstance();
+	if(GameInstance == nullptr)
+	{
+		return;
+	}
+
+	UMissionAutoCycleController* AutoCycleController = GameInstance->GetSubsystem<UMissionAutoCycleController>();
+	if(AutoCycleController != nullptr)
 	{
 		AutoCycleController->ToggleAutoCycleMode();
 	}

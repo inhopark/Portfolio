@@ -12,7 +12,8 @@ void AMonsterSpawner::StartSpawning(AActor* InTargetPlayer)
 {
 	TargetPlayer = InTargetPlayer;
 
-	if (UWorld* World = GetWorld())
+	UWorld* World = GetWorld();
+	if(World != nullptr)
 	{
 		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
 		World->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AMonsterSpawner::SpawnMonster, SpawnInterval, true, 0.5f);
@@ -21,7 +22,8 @@ void AMonsterSpawner::StartSpawning(AActor* InTargetPlayer)
 
 void AMonsterSpawner::StopSpawning()
 {
-	if (UWorld* World = GetWorld())
+	UWorld* World = GetWorld();
+	if(World != nullptr)
 	{
 		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
@@ -29,9 +31,9 @@ void AMonsterSpawner::StopSpawning()
 	// 미션 종료 시 화면에 남아있는 몬스터를 전부 풀로 반환.
 	// Deactivate()가 HandleMonsterDeactivated를 통해 ActiveMonsters를 수정하므로 복사본을 순회함
 	TArray<AMonster*> MonstersToDeactivate = ActiveMonsters;
-	for (AMonster* Monster : MonstersToDeactivate)
+	for(AMonster* Monster : MonstersToDeactivate)
 	{
-		if (Monster != nullptr)
+		if(Monster != nullptr)
 		{
 			Monster->Deactivate();
 		}
@@ -42,14 +44,14 @@ void AMonsterSpawner::StopSpawning()
 
 void AMonsterSpawner::SpawnMonster()
 {
-	if (TargetPlayer.IsValid() == false || MonsterClass == nullptr)
+	if(TargetPlayer.IsValid() == false || MonsterClass == nullptr)
 	{
 		return;
 	}
 
 	// 난이도를 위해 한 번에 여러 마리를 랜덤으로 동시에 등장시킴
 	const int32 SpawnCount = FMath::RandRange(MinSpawnCount, MaxSpawnCount);
-	for (int32 Index = 0; Index < SpawnCount; ++Index)
+	for(int32 Index = 0; Index < SpawnCount; ++Index)
 	{
 		SpawnOneMonster();
 	}
@@ -58,7 +60,7 @@ void AMonsterSpawner::SpawnMonster()
 void AMonsterSpawner::SpawnOneMonster()
 {
 	AMonster* Monster = AcquireMonster();
-	if (Monster == nullptr)
+	if(Monster == nullptr)
 	{
 		return;
 	}
@@ -75,32 +77,35 @@ AMonster* AMonsterSpawner::AcquireMonster()
 {
 	// 오브젝트 풀 패턴: 대기 중인 몬스터가 있으면 재사용, 없을 때만 새로 생성해
 	// 디펜스 웨이브 내내 반복되는 Spawn/Destroy 비용을 없앰
-	if (PooledMonsters.Num() > 0)
+	if(PooledMonsters.Num() > 0)
 	{
 		return PooledMonsters.Pop();
 	}
 
 	UWorld* World = GetWorld();
-	if (World == nullptr)
+	if(World == nullptr)
 	{
 		return nullptr;
 	}
 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	AMonster* NewMonster = World->SpawnActor<AMonster>(MonsterClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-	if (NewMonster != nullptr)
+	AMonster* NewMonster = World->SpawnActor<AMonster>(MonsterClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParameters);
+	if(NewMonster == nullptr)
 	{
-		NewMonster->OnDeactivated.AddDynamic(this, &AMonsterSpawner::HandleMonsterDeactivated);
+		UE_LOG(LogTemp, Error, TEXT("## MonsterSpawner ## AcquireMonster ## Monster Spawn Failed ## MonsterClass : %s"), *GetNameSafe(MonsterClass));
+		return nullptr;
 	}
+
+	NewMonster->OnDeactivated.AddDynamic(this, &AMonsterSpawner::HandleMonsterDeactivated);
 
 	return NewMonster;
 }
 
 void AMonsterSpawner::HandleMonsterDeactivated(AMonster* Monster)
 {
-	if (Monster == nullptr)
+	if(Monster == nullptr)
 	{
 		return;
 	}

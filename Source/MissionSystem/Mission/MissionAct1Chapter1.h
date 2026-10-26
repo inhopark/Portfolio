@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Mission/DefenseMinigameMission.h"
@@ -13,8 +13,9 @@ class MISSIONSYSTEM_API UMissionAct1Chapter1 : public UDefenseMinigameMission
 
 protected:
 
-	virtual void EnterReadyState() override;
-	virtual void EnterInProgressState() override;
-	virtual void EnterSucceededState() override;
-	virtual void EnterFailedState() override;
-};
+	virtual void OnReady() override;
+	virtual void OnInProgress() override;
+	virtual void OnSucceeded() override;
+	virtual void OnFailed() override;
+
+};// end class

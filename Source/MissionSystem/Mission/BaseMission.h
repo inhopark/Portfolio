@@ -15,39 +15,35 @@ class MISSIONSYSTEM_API UBaseMission : public UObject
 
 private:
 
-	EMissionState MissionState;
+	EMissionState MissionState = EMissionState::None;
+
+protected:
+
+	// AgreeMission()에서 저장됨. OnInProgress() 등 State 훅에서 사용 가능
+	TWeakObjectPtr<AMissionSystemCharacter> MissionPlayer;
 
 public:
 
 	UPROPERTY()
 	FOnMissionStateChanged OnMissionStateChanged;
 
-private:
+public:
 
-	void SetState(EMissionState NewState);
+	UBaseMission();
+
+	virtual void Initialize();
 
 protected:
 
-	// AgreeMission()에서 저장됨. EnterInProgressState() 등 State 훅에서 사용 가능
-	TWeakObjectPtr<AMissionSystemCharacter> MissionPlayer;
+	virtual void OnReady();
 
-	AMissionSystemCharacter* GetMissionPlayer() const;
+	virtual void OnInProgress();
 
-	virtual void EnterReadyState();
+	virtual void OnSucceeded();
 
-	virtual void EnterInProgressState();
-
-	virtual void EnterSucceededState();
-
-	virtual void EnterFailedState();
+	virtual void OnFailed();
 
 public:
-
-	FORCEINLINE EMissionState GetMissionState() const { return MissionState; }
-
-public:
-
-	virtual void Initialize();
 
 	virtual void AgreeMission(AMissionSystemCharacter* Player);
 
@@ -57,14 +53,20 @@ public:
 
 	virtual void FailedMission();
 
+	FORCEINLINE EMissionState GetMissionState() const { return MissionState; }
+
 	// 이 미션이 디펜스 미니게임을 진행 중이라면 남은 시간(초)을 반환. 없으면 음수(기본 구현)
 	virtual float GetMinigameRemainingTime() const { return -1.0f; }
 
 	// 이 미션이 디펜스 미니게임을 진행 중이라면 총 제한시간(초)을 반환. 없으면 0(기본 구현)
 	virtual float GetMinigameTotalDuration() const { return 0.0f; }
 
-public:
+protected:
 
-	UBaseMission();
+	AMissionSystemCharacter* GetMissionPlayer() const;
 
-};
+private:
+
+	bool SetState(EMissionState NewState);
+
+};// end class

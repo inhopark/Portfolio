@@ -14,39 +14,27 @@ class MISSIONSYSTEM_API UMissionManager : public UGameInstanceSubsystem
 private:
 
 	UPROPERTY()
-	class UMissionFactory* MissionFactory;
+	class UMissionFactory* MissionFactory = nullptr;
 
 	UPROPERTY()
-	class UBaseMission* CurrentMission;
+	class UBaseMission* CurrentMission = nullptr;
 
 	UPROPERTY()
-	class UMainMissionWidget* MainMissionWidget;
+	class UMainMissionWidget* MainMissionWidget = nullptr;
 
 	UPROPERTY()
-	class UMissionResultWidget* MissionResultWidget;
+	class UMissionResultWidget* MissionResultWidget = nullptr;
 
 	UPROPERTY()
-	class ANPC* CurrentMissionNPC;
+	class ANPC* CurrentMissionNPC = nullptr;
 
-private:
+public:
 
-	bool IsMissionRequest();
-
-	void SetUICursorMode(bool bShow);
-
-	void RequestMission(EMissionUnique MissionUnique);
-
-	void ClearCurrentMission();
-
-	// 결과창(성공/실패) 노출
-	void ShowMissionResultWidget(EMissionState NewState);
-
-	// 디펜스 모드에서 보여지는 UI 위젯 Visible 여부를 설정
-	void SetDefenseHUDVisible(bool bVisible);
-
-	// 현재 컨트롤 중인 플레이어 캐릭터 / 컨트롤러 조회 헬퍼
-	class AMissionSystemCharacter* GetMissionCharacter() const;
-	class AMainPlayerController* GetMainPlayerController() const;
+	// 미션 상태가 바뀔 때마다(OnMissionStateChanged 처리 이후) 브로드캐스트되는 공개 이벤트.
+	// MissionManager 자신의 동작은 그대로이며, 외부 시스템(자동 사이클 모드 등)이 상태 변화를
+	// 관찰할 수 있도록 노출만 하는 것 — MissionManager는 이 이벤트를 구독하는 대상이 누구인지 모름
+	UPROPERTY()
+	FOnMissionStateChanged OnAnyMissionStateChanged;
 
 public:
 
@@ -86,10 +74,26 @@ public:
 	// UDefenseMinigameMission 여부를 확인하거나 상태를 조회할 때 사용
 	FORCEINLINE UBaseMission* GetCurrentMission() const { return CurrentMission; }
 
-	// 미션 상태가 바뀔 때마다(OnMissionStateChanged 처리 이후) 브로드캐스트되는 공개 이벤트.
-	// MissionManager 자신의 동작은 그대로이며, 외부 시스템(자동 사이클 모드 등)이 상태 변화를
-	// 관찰할 수 있도록 노출만 하는 것 — MissionManager는 이 이벤트를 구독하는 대상이 누구인지 모름
-	UPROPERTY()
-	FOnMissionStateChanged OnAnyMissionStateChanged;
+private:
 
-};
+	void RequestMission(EMissionUnique MissionUnique);
+
+	bool IsMissionRequest();
+
+	void SetUICursorMode(bool bShow);
+
+	// 결과창(성공/실패) 노출
+	void ShowMissionResultWidget(EMissionState NewState);
+
+	void ClearCurrentMission();
+
+	void MovePlayerToPlayerStart(class AMissionSystemCharacter* MissionCharacter);
+
+	// 디펜스 모드에서 보여지는 UI 위젯 Visible 여부를 설정
+	void SetDefenseHUDVisible(bool bVisible);
+
+	// 현재 컨트롤 중인 플레이어 캐릭터 / 컨트롤러 조회 헬퍼
+	class AMissionSystemCharacter* GetMissionCharacter() const;
+	class AMainPlayerController* GetMainPlayerController() const;
+
+};// end class

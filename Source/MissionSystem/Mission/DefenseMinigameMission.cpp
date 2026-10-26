@@ -2,16 +2,56 @@
 #include "Manager/DefenseMinigameController.h"
 #include "Character/User/MissionSystemCharacter.h"
 
-void UDefenseMinigameMission::EnterInProgressState()
+void UDefenseMinigameMission::OnInProgress()
 {
-	Super::EnterInProgressState();
+	Super::OnInProgress();
 
 	GetOrCreateDefenseMinigameController()->Start(GetMissionPlayer());
 }
 
+void UDefenseMinigameMission::OnSucceeded()
+{
+	Super::OnSucceeded();
+
+	if(DefenseMinigame != nullptr)
+	{
+		DefenseMinigame->Stop();
+	}
+}
+
+void UDefenseMinigameMission::OnFailed()
+{
+	Super::OnFailed();
+
+	if(DefenseMinigame != nullptr)
+	{
+		DefenseMinigame->Stop();
+	}
+}
+
+float UDefenseMinigameMission::GetMinigameRemainingTime() const
+{
+	if(DefenseMinigame == nullptr)
+	{
+		return -1.0f;
+	}
+
+	return DefenseMinigame->GetRemainingTime();
+}
+
+float UDefenseMinigameMission::GetMinigameTotalDuration() const
+{
+	if(DefenseMinigame == nullptr)
+	{
+		return 0.0f;
+	}
+
+	return DefenseMinigame->GetTotalDuration();
+}
+
 UDefenseMinigameController* UDefenseMinigameMission::GetOrCreateDefenseMinigameController()
 {
-	if (DefenseMinigame == nullptr)
+	if(DefenseMinigame == nullptr)
 	{
 		DefenseMinigame = NewObject<UDefenseMinigameController>(this);
 		DefenseMinigame->OnSurvived.AddDynamic(this, &UDefenseMinigameMission::HandleMinigameSurvived);
@@ -20,37 +60,7 @@ UDefenseMinigameController* UDefenseMinigameMission::GetOrCreateDefenseMinigameC
 	return DefenseMinigame;
 }
 
-void UDefenseMinigameMission::EnterSucceededState()
-{
-	Super::EnterSucceededState();
-
-	if (DefenseMinigame != nullptr)
-	{
-		DefenseMinigame->Stop();
-	}
-}
-
-void UDefenseMinigameMission::EnterFailedState()
-{
-	Super::EnterFailedState();
-
-	if (DefenseMinigame != nullptr)
-	{
-		DefenseMinigame->Stop();
-	}
-}
-
 void UDefenseMinigameMission::HandleMinigameSurvived()
 {
 	SuccessMission();
-}
-
-float UDefenseMinigameMission::GetMinigameRemainingTime() const
-{
-	return DefenseMinigame != nullptr ? DefenseMinigame->GetRemainingTime() : -1.0f;
-}
-
-float UDefenseMinigameMission::GetMinigameTotalDuration() const
-{
-	return DefenseMinigame != nullptr ? DefenseMinigame->GetTotalDuration() : 0.0f;
 }

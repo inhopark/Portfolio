@@ -10,8 +10,7 @@ class AMissionSystemGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+
 	AMissionSystemGameMode();
-};
 
-
-
+};// end class

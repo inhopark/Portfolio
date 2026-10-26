@@ -25,21 +25,21 @@ class MISSIONSYSTEM_API UMissionAutoCycleController : public UGameInstanceSubsys
 
 private:
 
-	bool bEnabled = false;
+	bool bIsEnabled = false;
 
 	// NPC 방향으로 이동 중인지 (Ready 상태가 되면 꺼짐)
-	bool bApproachingNPC = false;
+	bool bIsApproachingNPC = false;
 
 	// 디펜스 미니게임 중 좌우 회피 이동 중인지 (Succeeded/Failed가 되면 꺼짐)
-	bool bDodging = false;
+	bool bIsDodging = false;
 
-	bool bDodgeMovingRight = true;
+	bool bIsDodgeMovingRight = true;
 
 	// 현재 회피 방향으로 이동을 시작한 위치 (여기서부터 DodgeSwitchDistance만큼 움직이면 방향 전환)
 	FVector DodgeLegStartLocation = FVector::ZeroVector;
 
 	UPROPERTY()
-	ANPC* TargetNPC;
+	ANPC* TargetNPC = nullptr;
 
 	FTimerHandle ActionDelayTimerHandle;
 
@@ -65,11 +65,25 @@ private:
 	UPROPERTY(EditAnywhere, Category = "AutoCycle")
 	float AutoCycleSurvivalDuration = 5.0f;
 
-	UMissionManager* GetMissionManager() const;
+public:
 
-	AMissionSystemCharacter* GetPlayerCharacter() const;
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	ANPC* FindNearestNPC(const AMissionSystemCharacter* PlayerCharacter) const;
+	// FTickableGameObject
+	virtual void Tick(float DeltaTime) override;
+	virtual bool IsTickable() const override { return bIsApproachingNPC == true || bIsDodging == true; }
+	virtual UWorld* GetTickableGameObjectWorld() const override { return GetWorld(); }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UMissionAutoCycleController, STATGROUP_Tickables); }
+
+public:
+
+	// 자동 사이클 모드를 켜고 끔 (AMainPlayerController::ToggleAutoCycleMode()가 콘솔 명령
+	// "ToggleAutoCycleMode"을 받아 이 함수를 호출해줌 — GameInstanceSubsystem은 콘솔 Exec
+	// 디스패치 체인에 포함되지 않아 직접 UFUNCTION(Exec)로 노출할 수 없음).
+	// 켜지면 가장 가까운 NPC에게 자동으로 다가가 한 사이클을 진행하고, 끝나면 자동으로 꺼짐
+	void ToggleAutoCycleMode();
+
+private:
 
 	void StartApproachingTargetNPC();
 
@@ -90,19 +104,10 @@ private:
 
 	void TriggerAutoConfirm();
 
-public:
+	UMissionManager* GetMissionManager() const;
 
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	AMissionSystemCharacter* GetPlayerCharacter() const;
 
-	// FTickableGameObject
-	virtual void Tick(float DeltaTime) override;
-	virtual bool IsTickable() const override { return bApproachingNPC || bDodging; }
-	virtual UWorld* GetTickableGameObjectWorld() const override { return GetWorld(); }
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UMissionAutoCycleController, STATGROUP_Tickables); }
+	ANPC* FindNearestNPC(const AMissionSystemCharacter* PlayerCharacter) const;
 
-	// 자동 사이클 모드를 켜고 끔 (AMainPlayerController::ToggleAutoCycleMode()가 콘솔 명령
-	// "ToggleAutoCycleMode"을 받아 이 함수를 호출해줌 — GameInstanceSubsystem은 콘솔 Exec
-	// 디스패치 체인에 포함되지 않아 직접 UFUNCTION(Exec)로 노출할 수 없음).
-	// 켜지면 가장 가까운 NPC에게 자동으로 다가가 한 사이클을 진행하고, 끝나면 자동으로 꺼짐
-	void ToggleAutoCycleMode();
-};
+};// end class

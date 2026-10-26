@@ -18,7 +18,7 @@ class MISSIONSYSTEM_API UDefenseMinigameController : public UObject
 private:
 
 	UPROPERTY()
-	AMonsterSpawner* MonsterSpawner;
+	AMonsterSpawner* MonsterSpawner = nullptr;
 
 	// 이 시간(초) 동안 생존하면 OnSurvived 브로드캐스트
 	UPROPERTY(EditAnywhere, Category = "Defense")
@@ -26,15 +26,12 @@ private:
 
 	FTimerHandle SurvivalTimerHandle;
 
-	AMonsterSpawner* GetOrCreateMonsterSpawner();
-
-	UFUNCTION()
-	void HandleTimerExpired();
-
 public:
 
 	UPROPERTY()
 	FOnDefenseMinigameSurvived OnSurvived;
+
+public:
 
 	// 몬스터 스폰과 생존 타이머를 시작
 	void Start(AMissionSystemCharacter* Player);
@@ -50,4 +47,12 @@ public:
 	float GetRemainingTime() const;
 
 	FORCEINLINE float GetTotalDuration() const { return SurvivalDuration; }
-};
+
+private:
+
+	UFUNCTION()
+	void HandleTimerExpired();
+
+	AMonsterSpawner* GetOrCreateMonsterSpawner();
+
+};// end class

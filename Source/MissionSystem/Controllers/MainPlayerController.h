@@ -29,26 +29,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UMissionTimerWidget> MissionTimerWidgetClass;
 
-	virtual void BeginPlay() override;
-
 private:
 
 	UPROPERTY()
-	UMainMissionWidget* MainMissionWidgetInstance;
+	UMainMissionWidget* MainMissionWidgetInstance = nullptr;
 
 	UPROPERTY()
-	UMissionResultWidget* MissionResultWidgetInstance;
+	UMissionResultWidget* MissionResultWidgetInstance = nullptr;
 
 	UPROPERTY()
-	UHPWidget* HPWidgetInstance;
+	UHPWidget* HPWidgetInstance = nullptr;
 
 	UPROPERTY()
-	UMissionTimerWidget* MissionTimerWidgetInstance;
+	UMissionTimerWidget* MissionTimerWidgetInstance = nullptr;
 
-	// WidgetClass(미지정 시 FallbackPath로 로드) -> 생성 -> 뷰포트에 추가 -> 처음엔 Hidden.
-	// BeginPlay에서 네 개 위젯 모두 똑같이 반복되는 생성 절차를 한 곳으로 모음
-	template <typename TWidgetClass>
-	TWidgetClass* CreateAndAddWidget(TSubclassOf<TWidgetClass> WidgetClass, const TCHAR* FallbackPath);
+protected:
+
+	virtual void BeginPlay() override;
 
 public:
 
@@ -60,30 +57,42 @@ public:
 	// PlayerController는 콘솔 Exec 디스패치 체인에 포함되는 진입점 역할만 함
 	UFUNCTION(Exec)
 	void ToggleAutoCycleMode();
-};
+
+private:
+
+	// WidgetClass(미지정 시 FallbackPath로 로드) -> 생성 -> 뷰포트에 추가 -> 처음엔 Hidden.
+	// BeginPlay에서 네 개 위젯 모두 똑같이 반복되는 생성 절차를 한 곳으로 모음
+	template <typename TWidgetClass>
+	TWidgetClass* CreateAndAddWidget(TSubclassOf<TWidgetClass> WidgetClass, const TCHAR* FallbackPath);
+
+};// end class
 
 template <typename TWidgetClass>
 TWidgetClass* AMainPlayerController::CreateAndAddWidget(TSubclassOf<TWidgetClass> WidgetClass, const TCHAR* FallbackPath)
 {
 	TSubclassOf<TWidgetClass> ClassToUse = WidgetClass;
-	if (ClassToUse == nullptr)
+	if(ClassToUse == nullptr)
 	{
 		// 에디터/블루프린트에서 미지정 시 기존 에셋 경로로 Fallback 로드
 		ClassToUse = LoadClass<TWidgetClass>(nullptr, FallbackPath);
 	}
 
-	if (ClassToUse == nullptr)
+	if(ClassToUse == nullptr)
 	{
+		UE_LOG(LogTemp, Error, TEXT("## MainPlayerController ## CreateAndAddWidget ## Widget Class Not Found ## FallbackPath : %s"), FallbackPath);
 		return nullptr;
 	}
 
 	TWidgetClass* NewWidget = CreateWidget<TWidgetClass>(this, ClassToUse);
-	if (NewWidget != nullptr)
+	if(NewWidget == nullptr)
 	{
-		// 처음엔 안 보이게 설정 후 뷰포트에 추가
-		NewWidget->AddToViewport();
-		NewWidget->SetVisibility(ESlateVisibility::Hidden);
+		UE_LOG(LogTemp, Error, TEXT("## MainPlayerController ## CreateAndAddWidget ## Widget Create Failed ## WidgetClass : %s"), *GetNameSafe(ClassToUse));
+		return nullptr;
 	}
+
+	// 처음엔 안 보이게 설정 후 뷰포트에 추가
+	NewWidget->AddToViewport();
+	NewWidget->SetVisibility(ESlateVisibility::Hidden);
 
 	return NewWidget;
 }

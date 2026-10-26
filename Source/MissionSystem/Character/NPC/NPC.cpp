@@ -6,47 +6,60 @@
 ANPC::ANPC()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	MissionUnique = EMissionUnique::Act1Chapter1;
 }
 
 void ANPC::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (USphereComponent* SphereComponent = FindComponentByClass<USphereComponent>())
+	USphereComponent* SphereComponent = FindComponentByClass<USphereComponent>();
+	if(SphereComponent != nullptr)
 	{
 		SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ANPC::OnUserCheckOverlapBegin);
 		SphereComponent->OnComponentEndOverlap.AddDynamic(this, &ANPC::OnUserCheckOverlapEnd);
 	}
 }
 
-void ANPC::OnUserCheckOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ANPC::OnUserCheckOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (AMissionSystemCharacter* PlayerCharacter = Cast<AMissionSystemCharacter>(OtherActor))
+	AMissionSystemCharacter* PlayerCharacter = Cast<AMissionSystemCharacter>(OtherActor);
+	if(PlayerCharacter == nullptr)
 	{
-		// 미션 요청 UI 띄우는 로직.
-		if (GetGameInstance() != nullptr)
-		{
-			if (UMissionManager* MissionManager = GetGameInstance()->GetSubsystem<UMissionManager>())
-			{
-				MissionManager->ShowMainMissionWidget(MissionUnique, this);
-			}
-		}
+		return;
+	}
+
+	// 미션 요청 UI 띄우는 로직.
+	UGameInstance* GameInstance = GetGameInstance();
+	if(GameInstance == nullptr)
+	{
+		return;
+	}
+
+	UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>();
+	if(MissionManager != nullptr)
+	{
+		MissionManager->ShowMainMissionWidget(MissionUnique, this);
 	}
 }
 
-void ANPC::OnUserCheckOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void ANPC::OnUserCheckOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
 {
-	if (AMissionSystemCharacter* PlayerCharacter = Cast<AMissionSystemCharacter>(OtherActor))
+	AMissionSystemCharacter* PlayerCharacter = Cast<AMissionSystemCharacter>(OtherActor);
+	if(PlayerCharacter == nullptr)
 	{
-		// 미션 요청 UI 제거하는 로직.
-		if (GetGameInstance())
-		{
-			if (UMissionManager* MissionManager = GetGameInstance()->GetSubsystem<UMissionManager>())
-			{
-				MissionManager->HideMainMissionWidget();
-			}
-		}
+		return;
+	}
+
+	// 미션 요청 UI 제거하는 로직.
+	UGameInstance* GameInstance = GetGameInstance();
+	if(GameInstance == nullptr)
+	{
+		return;
+	}
+
+	UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>();
+	if(MissionManager != nullptr)
+	{
+		MissionManager->HideMainMissionWidget();
 	}
 }

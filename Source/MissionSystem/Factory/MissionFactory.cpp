@@ -3,13 +3,20 @@
 #include "Mission/MissionAct1Chapter1.h"
 #include "Mission/MissionAct1Chapter2.h"
 
+void UMissionFactory::Initialize()
+{
+	RegisterMission<UMissionAct1Chapter1>(EMissionUnique::Act1Chapter1);
+	RegisterMission<UMissionAct1Chapter2>(EMissionUnique::Act1Chapter2);
+}
+
 UBaseMission* UMissionFactory::CreateMission(UObject* Outer, EMissionUnique MissionUnique)
 {
-	switch (MissionUnique)
+	const TFunction<UBaseMission*(UObject*)>* MissionCreator = MissionCreators.Find(MissionUnique);
+	if(MissionCreator == nullptr)
 	{
-		case EMissionUnique::Act1Chapter1: return NewObject<UMissionAct1Chapter1>(Outer);
-		case EMissionUnique::Act1Chapter2: return NewObject<UMissionAct1Chapter2>(Outer);
+		UE_LOG(LogTemp, Error, TEXT("## MissionFactory ## CreateMission ## Mission Not Registered ## MissionUnique : %s"), *UEnum::GetValueAsString(MissionUnique));
+		return nullptr;
 	}
 
-	return nullptr;
+	return (*MissionCreator)(Outer);
 }

@@ -7,33 +7,22 @@ void UMissionResultWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (LeftButton)
+	if(LeftButton != nullptr)
 	{
 		LeftButton->OnClicked.AddDynamic(this, &UMissionResultWidget::OnConfirmButtonClicked);
 	}
 
-	if (LeftButtonTextBlock)
+	if(LeftButtonTextBlock != nullptr)
 	{
 		LeftButtonTextBlock->SetText(MISSION_CONFIRM_BUTTON_TEXT);
 	}
 }
 
-void UMissionResultWidget::SetResultTitle(const FText& NewTitle)
-{
-	if (MissionTitleText)
-	{
-		MissionTitleText->SetText(NewTitle);
-	}
-}
-
-void UMissionResultWidget::OnConfirmButtonClicked()
-{
-	OnConfirmed.Broadcast();
-}
-
 void UMissionResultWidget::SetResultState(EMissionState NewState)
 {
 	ResultState = NewState;
+
+	UE_LOG(LogTemp, Log, TEXT("## MissionResultWidget ## SetResultState ## ResultState : %s"), *UEnum::GetValueAsString(ResultState));
 
 	if(ResultState == EMissionState::Succeeded)
 	{
@@ -42,5 +31,18 @@ void UMissionResultWidget::SetResultState(EMissionState NewState)
 	else if(ResultState == EMissionState::Failed)
 	{
 		SetResultTitle(MISSION_FAILED);
+	}
+}
+
+void UMissionResultWidget::OnConfirmButtonClicked()
+{
+	OnConfirmed.Broadcast();
+}
+
+void UMissionResultWidget::SetResultTitle(const FText& NewTitle)
+{
+	if(MissionTitleText != nullptr)
+	{
+		MissionTitleText->SetText(NewTitle);
 	}
 }

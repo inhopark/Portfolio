@@ -11,15 +11,6 @@ class MISSIONSYSTEM_API AMonsterSpawner : public AActor
 {
 	GENERATED_BODY()
 
-public:
-	AMonsterSpawner();
-
-	// InTargetPlayer 앞쪽(위쪽)에서 몬스터를 주기적으로 스폰 시작
-	void StartSpawning(AActor* InTargetPlayer);
-
-	// 스폰 중단 및 남아있는 몬스터를 전부 풀로 반환
-	void StopSpawning();
-
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Spawn")
@@ -57,6 +48,20 @@ private:
 	UPROPERTY()
 	TArray<AMonster*> ActiveMonsters;
 
+public:
+
+	AMonsterSpawner();
+
+public:
+
+	// InTargetPlayer 앞쪽(위쪽)에서 몬스터를 주기적으로 스폰 시작
+	void StartSpawning(AActor* InTargetPlayer);
+
+	// 스폰 중단 및 남아있는 몬스터를 전부 풀로 반환
+	void StopSpawning();
+
+private:
+
 	// 타이머 콜백: MinSpawnCount~MaxSpawnCount 중 랜덤 개수만큼 SpawnOneMonster()를 호출
 	void SpawnMonster();
 
@@ -68,4 +73,5 @@ private:
 
 	UFUNCTION()
 	void HandleMonsterDeactivated(AMonster* Monster);
-};
+
+};// end class

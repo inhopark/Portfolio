@@ -12,7 +12,8 @@ void UMissionAutoCycleController::Initialize(FSubsystemCollectionBase& Collectio
 {
 	Super::Initialize(Collection);
 
-	if (UMissionManager* MissionManager = GetMissionManager())
+	UMissionManager* MissionManager = GetMissionManager();
+	if(MissionManager != nullptr)
 	{
 		MissionManager->OnAnyMissionStateChanged.AddDynamic(this, &UMissionAutoCycleController::HandleMissionStateChanged);
 	}
@@ -20,12 +21,12 @@ void UMissionAutoCycleController::Initialize(FSubsystemCollectionBase& Collectio
 
 void UMissionAutoCycleController::Tick(float DeltaTime)
 {
-	if (bApproachingNPC)
+	if(bIsApproachingNPC == true)
 	{
 		AdvanceTowardTargetNPC();
 	}
 
-	if (bDodging)
+	if(bIsDodging == true)
 	{
 		AdvanceDodgeMovement();
 	}
@@ -33,11 +34,11 @@ void UMissionAutoCycleController::Tick(float DeltaTime)
 
 void UMissionAutoCycleController::ToggleAutoCycleMode()
 {
-	bEnabled = bEnabled == false;
+	bIsEnabled = bIsEnabled == false;
 
-	UE_LOG(LogTemp, Log, TEXT("## MissionAutoCycleController::ToggleAutoCycleMode ## AutoCycleMode = %s"), bEnabled ? TEXT("ON") : TEXT("OFF"));
+	UE_LOG(LogTemp, Log, TEXT("## MissionAutoCycleController ## ToggleAutoCycleMode ## AutoCycleMode : %s"), bIsEnabled == true ? TEXT("ON") : TEXT("OFF"));
 
-	if (bEnabled)
+	if(bIsEnabled == true)
 	{
 		StartApproachingTargetNPC();
 	}
@@ -46,7 +47,8 @@ void UMissionAutoCycleController::ToggleAutoCycleMode()
 		StopApproachingTargetNPC();
 		StopDodging();
 
-		if (UWorld* World = GetWorld())
+		UWorld* World = GetWorld();
+		if(World != nullptr)
 		{
 			World->GetTimerManager().ClearTimer(ActionDelayTimerHandle);
 		}
@@ -56,41 +58,42 @@ void UMissionAutoCycleController::ToggleAutoCycleMode()
 void UMissionAutoCycleController::StartApproachingTargetNPC()
 {
 	AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter();
-	if (PlayerCharacter == nullptr)
+	if(PlayerCharacter == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("## MissionAutoCycleController::StartApproachingTargetNPC ## Player character not found."));
-		bEnabled = false;
+		UE_LOG(LogTemp, Error, TEXT("## MissionAutoCycleController ## StartApproachingTargetNPC ## Player Character Not Found"));
+		bIsEnabled = false;
 		return;
 	}
 
 	TargetNPC = FindNearestNPC(PlayerCharacter);
-	if (TargetNPC == nullptr)
+	if(TargetNPC == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("## MissionAutoCycleController::StartApproachingTargetNPC ## No NPC found in the level."));
-		bEnabled = false;
+		UE_LOG(LogTemp, Error, TEXT("## MissionAutoCycleController ## StartApproachingTargetNPC ## NPC Not Found In Level"));
+		bIsEnabled = false;
 		return;
 	}
 
 	// 데모 진행 속도를 위해 접근 중에는 일반 걷기 속도보다 빠르게 이동시킴.
 	// Agree 처리 시 SetPlayMode(DefenseMode)가, 미션 종료 시 SetPlayMode(Normal)이
 	// MaxWalkSpeed를 각 모드 값으로 다시 덮어쓰므로 별도로 복원할 필요는 없음
-	if (UCharacterMovementComponent* MovementComponent = PlayerCharacter->GetCharacterMovement())
+	UCharacterMovementComponent* MovementComponent = PlayerCharacter->GetCharacterMovement();
+	if(MovementComponent != nullptr)
 	{
 		MovementComponent->MaxWalkSpeed = AutoApproachMoveSpeed;
 	}
 
-	bApproachingNPC = true;
+	bIsApproachingNPC = true;
 }
 
 void UMissionAutoCycleController::StopApproachingTargetNPC()
 {
-	bApproachingNPC = false;
+	bIsApproachingNPC = false;
 }
 
 void UMissionAutoCycleController::AdvanceTowardTargetNPC()
 {
 	AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter();
-	if (PlayerCharacter == nullptr || TargetNPC == nullptr)
+	if(PlayerCharacter == nullptr || TargetNPC == nullptr)
 	{
 		StopApproachingTargetNPC();
 		return;
@@ -105,10 +108,11 @@ void UMissionAutoCycleController::AdvanceTowardTargetNPC()
 
 void UMissionAutoCycleController::StartDodging()
 {
-	bDodging = true;
-	bDodgeMovingRight = true;
+	bIsDodging = true;
+	bIsDodgeMovingRight = true;
 
-	if (AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter())
+	AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter();
+	if(PlayerCharacter != nullptr)
 	{
 		DodgeLegStartLocation = PlayerCharacter->GetActorLocation();
 	}
@@ -116,13 +120,13 @@ void UMissionAutoCycleController::StartDodging()
 
 void UMissionAutoCycleController::StopDodging()
 {
-	bDodging = false;
+	bIsDodging = false;
 }
 
 void UMissionAutoCycleController::AdvanceDodgeMovement()
 {
 	AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter();
-	if (PlayerCharacter == nullptr)
+	if(PlayerCharacter == nullptr)
 	{
 		StopDodging();
 		return;
@@ -131,27 +135,27 @@ void UMissionAutoCycleController::AdvanceDodgeMovement()
 	// 디펜스 모드는 월드 Y축(오른쪽)만 좌우 이동으로 취급함(AMissionSystemCharacter::Move() 참고).
 	// 시간이 아니라 현재 방향으로 실제 이동한 거리가 DodgeSwitchDistance에 도달하면 방향 전환
 	const float TraveledDistance = FMath::Abs(PlayerCharacter->GetActorLocation().Y - DodgeLegStartLocation.Y);
-	if (TraveledDistance >= DodgeSwitchDistance)
+	if(TraveledDistance >= DodgeSwitchDistance)
 	{
-		bDodgeMovingRight = bDodgeMovingRight == false;
+		bIsDodgeMovingRight = bIsDodgeMovingRight == false;
 		DodgeLegStartLocation = PlayerCharacter->GetActorLocation();
 	}
 
 	const FVector RightDirection(0.0f, 1.0f, 0.0f);
-	const float Scale = bDodgeMovingRight ? 1.0f : -1.0f;
+	const float Scale = bIsDodgeMovingRight == true ? 1.0f : -1.0f;
 
 	PlayerCharacter->AddMovementInput(RightDirection, Scale, true);
 }
 
 void UMissionAutoCycleController::HandleMissionStateChanged(EMissionState NewState)
 {
-	if (bEnabled == false)
+	if(bIsEnabled == false)
 	{
 		return;
 	}
 
 	UWorld* World = GetWorld();
-	if (World == nullptr)
+	if(World == nullptr)
 	{
 		return;
 	}
@@ -159,20 +163,28 @@ void UMissionAutoCycleController::HandleMissionStateChanged(EMissionState NewSta
 	switch (NewState)
 	{
 		case EMissionState::Ready:
-			// 오버랩으로 미션창이 떴다는 뜻이므로 더 이상 이동할 필요 없음
-			StopApproachingTargetNPC();
-			World->GetTimerManager().SetTimer(ActionDelayTimerHandle, this, &UMissionAutoCycleController::TriggerAutoAgree, AutoAgreeDelay, false);
+			{
+				// 오버랩으로 미션창이 떴다는 뜻이므로 더 이상 이동할 필요 없음
+				StopApproachingTargetNPC();
+				World->GetTimerManager().SetTimer(ActionDelayTimerHandle, this, &UMissionAutoCycleController::TriggerAutoAgree, AutoAgreeDelay, false);
+			}
 			break;
 		case EMissionState::InProgress:
-			// 디펜스 미니게임 시작 -> 좌우 회피 이동 시작
-			StartDodging();
+			{
+				// 디펜스 미니게임 시작 -> 좌우 회피 이동 시작
+				StartDodging();
+			}
 			break;
 		case EMissionState::Succeeded:
 		case EMissionState::Failed:
-			StopDodging();
-			World->GetTimerManager().SetTimer(ActionDelayTimerHandle, this, &UMissionAutoCycleController::TriggerAutoConfirm, AutoConfirmDelay, false);
+			{
+				StopDodging();
+				World->GetTimerManager().SetTimer(ActionDelayTimerHandle, this, &UMissionAutoCycleController::TriggerAutoConfirm, AutoConfirmDelay, false);
+			}
 			break;
 		default:
+			{
+			}
 			break;
 	}
 }
@@ -180,13 +192,14 @@ void UMissionAutoCycleController::HandleMissionStateChanged(EMissionState NewSta
 void UMissionAutoCycleController::TriggerAutoAgree()
 {
 	UMissionManager* MissionManager = GetMissionManager();
-	if (MissionManager == nullptr)
+	if(MissionManager == nullptr)
 	{
 		return;
 	}
 
-	// Start() 호출(EnterInProgressState) 전에 생존 시간을 미리 단축 설정해둠
-	if (UDefenseMinigameMission* DefenseMission = Cast<UDefenseMinigameMission>(MissionManager->GetCurrentMission()))
+	// Start() 호출(OnInProgress) 전에 생존 시간을 미리 단축 설정해둠
+	UDefenseMinigameMission* DefenseMission = Cast<UDefenseMinigameMission>(MissionManager->GetCurrentMission());
+	if(DefenseMission != nullptr)
 	{
 		DefenseMission->GetOrCreateDefenseMinigameController()->SetSurvivalDurationOverride(AutoCycleSurvivalDuration);
 	}
@@ -196,7 +209,8 @@ void UMissionAutoCycleController::TriggerAutoAgree()
 
 void UMissionAutoCycleController::TriggerAutoConfirm()
 {
-	if (UMissionManager* MissionManager = GetMissionManager())
+	UMissionManager* MissionManager = GetMissionManager();
+	if(MissionManager != nullptr)
 	{
 		MissionManager->HandleMissionResultConfirmed();
 	}
@@ -204,12 +218,18 @@ void UMissionAutoCycleController::TriggerAutoConfirm()
 	TargetNPC = nullptr;
 
 	// 한 사이클(NPC 접근 -> Agree -> 디펜스 -> Confirm)만 돌고 자동으로 꺼짐
-	bEnabled = false;
+	bIsEnabled = false;
 }
 
 UMissionManager* UMissionAutoCycleController::GetMissionManager() const
 {
-	return GetGameInstance() != nullptr ? GetGameInstance()->GetSubsystem<UMissionManager>() : nullptr;
+	UGameInstance* GameInstance = GetGameInstance();
+	if(GameInstance == nullptr)
+	{
+		return nullptr;
+	}
+
+	return GameInstance->GetSubsystem<UMissionManager>();
 }
 
 AMissionSystemCharacter* UMissionAutoCycleController::GetPlayerCharacter() const
@@ -219,7 +239,7 @@ AMissionSystemCharacter* UMissionAutoCycleController::GetPlayerCharacter() const
 
 ANPC* UMissionAutoCycleController::FindNearestNPC(const AMissionSystemCharacter* PlayerCharacter) const
 {
-	if (PlayerCharacter == nullptr)
+	if(PlayerCharacter == nullptr)
 	{
 		return nullptr;
 	}
@@ -227,24 +247,24 @@ ANPC* UMissionAutoCycleController::FindNearestNPC(const AMissionSystemCharacter*
 	TArray<AActor*> FoundNPCs;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANPC::StaticClass(), FoundNPCs);
 
-	ANPC* Nearest = nullptr;
-	float NearestDistSq = 0.0f;
+	ANPC* NearestNPC = nullptr;
+	float NearestDistanceSquared = 0.0f;
 
-	for (AActor* Actor : FoundNPCs)
+	for(AActor* Actor : FoundNPCs)
 	{
 		ANPC* NPC = Cast<ANPC>(Actor);
-		if (NPC == nullptr)
+		if(NPC == nullptr)
 		{
 			continue;
 		}
 
-		const float DistSq = FVector::DistSquared(PlayerCharacter->GetActorLocation(), NPC->GetActorLocation());
-		if (Nearest == nullptr || DistSq < NearestDistSq)
+		const float DistanceSquared = FVector::DistSquared(PlayerCharacter->GetActorLocation(), NPC->GetActorLocation());
+		if(NearestNPC == nullptr || DistanceSquared < NearestDistanceSquared)
 		{
-			NearestDistSq = DistSq;
-			Nearest = NPC;
+			NearestDistanceSquared = DistanceSquared;
+			NearestNPC = NPC;
 		}
 	}
 
-	return Nearest;
+	return NearestNPC;
 }

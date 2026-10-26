@@ -8,27 +8,34 @@ void UMissionTimerWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this))
+	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this);
+	if(GameInstance == nullptr)
 	{
-		if (UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>())
-		{
-			const float Remaining = MissionManager->GetMissionRemainingTime();
-			if (Remaining >= 0.0f)
-			{
-				SetRemainingTime(Remaining, MissionManager->GetMissionTotalDuration());
-			}
-		}
+		return;
+	}
+
+	UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>();
+	if(MissionManager == nullptr)
+	{
+		return;
+	}
+
+	const float RemainingTime = MissionManager->GetMissionRemainingTime();
+	if(RemainingTime >= 0.0f)
+	{
+		SetRemainingTime(RemainingTime, MissionManager->GetMissionTotalDuration());
 	}
 }
 
 void UMissionTimerWidget::SetRemainingTime(float RemainingTime, float TotalDuration)
 {
-	if (TimerBar != nullptr)
+	if(TimerBar != nullptr)
 	{
-		TimerBar->SetPercent(TotalDuration > 0.0f ? RemainingTime / TotalDuration : 0.0f);
+		const float TimerPercent = TotalDuration > 0.0f ? RemainingTime / TotalDuration : 0.0f;
+		TimerBar->SetPercent(TimerPercent);
 	}
 
-	if (TimerText != nullptr)
+	if(TimerText != nullptr)
 	{
 		TimerText->SetText(FText::AsNumber(FMath::CeilToInt(RemainingTime)));
 	}

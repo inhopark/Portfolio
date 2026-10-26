@@ -19,8 +19,9 @@
 "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --no-pdf-header-footer --print-to-pdf="<출력 경로>.pdf" "file:///<html 절대경로>"
 ```
 
-- 2.3 원본을 덮어쓰지 않고 `_draft` 접미사 파일로 저장한다. 원본 교체는 사용자가 정한다.
-- 2.4 `_draft` 파일은 요청 전엔 커밋하지 않는다.
+- 2.3 내용을 고칠 때는 PDF를 만들기 전에 고친 내용을 `<원본명>_draft.txt` 텍스트 파일로 먼저 저장해 사용자가 빠르게 미리보게 한다. `_draft` PDF는 만들지 않는다.
+  - 사용자가 내용을 확정하면 그때 원본 이름으로 PDF를 렌더링한다. (이전 원본은 git 기록으로 복구 가능)
+- 2.4 `_draft.txt` 파일은 요청 전엔 커밋하지 않는다.
 - 2.5 페이지 나눔 CSS는 최소로 건다.
   - 페이지보다 커질 수 있는 큰 컨테이너(`.company-block`, `.project`)엔 `break-inside: avoid`를 걸지 않는다. 통째로 밀려 큰 여백이 생긴다.
   - 제목류(`.tag`, `.project-title`, `.sub-title`, `.company-row`, `h3`)엔 `break-after: avoid`.

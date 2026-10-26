@@ -4,4 +4,6 @@
 
 @ClaudeSkills/DefaultSkills.md
 @ClaudeSkills/CodingSkills.md
-@ClaudeSkills/PortfolioSkills.md
+@ClaudeSkills/TokenSavingSkills.md
+
+이력서/포트폴리오 PDF 작업을 할 때는 `ClaudeSkills/PortfolioSkills.md`를 먼저 읽고 그 규칙을 따른다.

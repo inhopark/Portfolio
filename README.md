@@ -1,7 +1,17 @@
-# MissionSystem
+# Portfolio
 
-Unreal Engine 5.8 + C++로 제작한 **NPC 기반 미션 시스템** 포트폴리오 프로젝트입니다.
-NPC에게 미션을 수락하면 위에서 몬스터가 내려오는 **쿼터뷰 디펜스 미니게임**으로 진입해 일정 시간을 생존하면 성공하는 흐름을 보여줍니다. 완성된 게임이 아니라, 깔끔한 코드 구조와 디자인 패턴 적용을 보여주는 데 목적이 있습니다.
+같은 **NPC 기반 미션 시스템**을 Unreal Engine 5 (C++)와 Unity 6 (C#)로 각각 구현한 포트폴리오 저장소입니다.
+NPC에게 미션을 수락하면 위에서 몬스터가 내려오는 **쿼터뷰 디펜스 미니게임**으로 진입해 일정 시간을 생존하면 성공하는 흐름을 보여줍니다. 완성된 게임이 아니라, 깔끔한 코드 구조와 디자인 패턴 적용을 보여주는 데 목적이 있습니다. Unity 버전은 Unreal 버전의 아키텍처를 그대로 이식했습니다.
+
+## 저장소 구성
+
+```
+Unreal/                        ← Unreal Engine 5.8 / C++ 프로젝트 (MissionSystem.uproject)
+Unity/                         ← Unity 6 / C# 프로젝트 (Assets, Packages, ProjectSettings)
+포트폴리오_Unreal_박인호.pdf
+포트폴리오_Unity_박인호.pdf
+CLAUDE.md, ClaudeSkills/       ← Claude Code 규칙 파일 (두 프로젝트 공통)
+```
 
 ## 진행 흐름
 
@@ -14,9 +24,13 @@ NPC에게 미션을 수락하면 위에서 몬스터가 내려오는 **쿼터뷰
 
 매번 NPC까지 걸어가 버튼을 눌러가며 전체 흐름을 확인하는 대신, 미션 사이클(NPC 접근 → 수락 → 디펜스 미니게임 → 결과 확인) 전체를 자동으로 한 번 돌려 시스템이 정상 동작하는지 검증할 수 있는 `UMissionAutoCycleController`를 두었습니다. 별도 UI나 입력 액션 없이 콘솔 명령(`ToggleAutoCycleMode`)으로 켜고 끄며, `MissionManager`가 노출하는 기존 public 함수를 사람이 버튼을 누른 것과 동일한 방식으로 호출하는 구조라 실제 게임 로직 코드는 전혀 건드리지 않습니다. 자동화된 테스트 러너가 없는 프로젝트에서, 반복 수동 플레이 없이 전체 플로우의 회귀를 빠르게 확인하기 위한 최소한의 장치입니다.
 
+Unity 버전은 같은 역할의 `MissionAutoCycleController`를 **F8** 키로 토글합니다.
+
 ## 설계 포인트
 
 적용한 패턴 위주로 정리했습니다.
+
+### Unreal
 
 | 패턴 | 적용 위치 |
 |---|---|
@@ -26,19 +40,43 @@ NPC에게 미션을 수락하면 위에서 몬스터가 내려오는 **쿼터뷰
 | Object Pool | `AMonster` — `Destroy()` 대신 `Deactivate()`로 풀에 반환 |
 | Facade | `UMissionManager` — HUD/위젯이 서브시스템 하나만 알면 되도록 진입점 통합 |
 
+### Unity
+
+| 패턴 | 적용 위치 |
+|---|---|
+| State Machine | `BaseMission` — `Ready → InProgress → Succeeded/Failed` |
+| Factory Method | `MissionFactory` — `MissionUnique` → 미션 타입 매핑 |
+| Template Method | `DefenseMinigameMission` — 디펜스 게임 변형용 베이스 클래스 |
+| Object Pool | `MonsterSpawner` — 몬스터를 destroy 대신 비활성화 후 재사용 |
+| Facade | `MissionManager` — NPC와 위젯이 소통하는 단일 창구 |
+
 ## 기술 스택
+
+### Unreal
 
 - Unreal Engine 5.8, C++
 - Enhanced Input
 - UMG (State 기반 HUD/대화창 위젯)
 
+### Unity
+
+- Unity 6000.3.10f1, C#
+- Input System 패키지 (레거시 Input Manager 미사용, 액션 기반 입력)
+- uGUI, 타입이 명확한 소수의 위젯 컴포넌트(`MainMissionWidget`, `MissionResultWidget`, `HPWidget`, `MissionTimerWidget`)로 구동
+
 ## 빌드 / 실행
+
+### Unreal
 
 이 저장소에는 `.sln`/`.vcxproj`가 포함되어 있지 않습니다(gitignore). 클론 후:
 
-1. `MissionSystem.uproject` 우클릭 → **Generate Visual Studio project files**
+1. `Unreal/MissionSystem.uproject` 우클릭 → **Generate Visual Studio project files**
 2. 생성된 `.sln`을 Visual Studio 2022(Unreal 워크로드)에서 열어 `MissionSystemEditor` (Development Editor, Win64) 빌드
-3. 또는 `MissionSystem.uproject`를 바로 실행해 컴파일 여부를 물으면 승인
+3. 또는 `Unreal/MissionSystem.uproject`를 바로 실행해 컴파일 여부를 물으면 승인
+
+### Unity
+
+Unity Hub로 `Unity/` 폴더를 열고(Unity 6000.3.10f1 이상의 6.x 버전), `Assets/Scenes/SampleScene.unity`를 연 다음 Play를 누르세요.
 
 코드 스타일 규칙은 [`ClaudeSkills/CodingSkills.md`](./ClaudeSkills/CodingSkills.md)를 참고하세요.
 

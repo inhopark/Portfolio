@@ -4,7 +4,7 @@
 
 ## 1. 대상 문서
 
-- 1.1 `MissionSystem` 저장소 루트의 포트폴리오_Unreal_박인호.pdf
+- 1.1 `Portfolio` 저장소 루트의 포트폴리오_Unreal_박인호.pdf, 포트폴리오_Unity_박인호.pdf
 - 1.2 비공개 저장소 `https://github.com/inhopark/Resume`의 자기소개서_박인호.pdf, 경력기술서_박인호.pdf. 공개 저장소에는 다시 커밋하지 않는다.
 - 1.3 모두 HTML을 헤드리스 Chrome으로 인쇄한 PDF다. 원본 HTML이 없으면 HTML 레플리카를 만들어 다시 렌더링한다.
 

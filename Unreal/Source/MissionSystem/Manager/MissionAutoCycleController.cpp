@@ -199,9 +199,9 @@ void UMissionAutoCycleController::TriggerAutoAgree()
 
 	// Start() 호출(OnInProgress) 전에 생존 시간을 미리 단축 설정해둠
 	UDefenseMinigameMission* DefenseMission = Cast<UDefenseMinigameMission>(MissionManager->GetCurrentMission());
-	if(DefenseMission != nullptr)
+	if(DefenseMission != nullptr && DefenseMission->GetDefenseMinigameController() != nullptr)
 	{
-		DefenseMission->GetOrCreateDefenseMinigameController()->SetSurvivalDurationOverride(AutoCycleSurvivalDuration);
+		DefenseMission->GetDefenseMinigameController()->SetSurvivalDurationOverride(AutoCycleSurvivalDuration);
 	}
 
 	MissionManager->HandleMissionButtonAction(EMissionButtonAction::Left);

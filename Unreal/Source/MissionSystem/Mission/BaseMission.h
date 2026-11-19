@@ -31,9 +31,14 @@ public:
 
 	UBaseMission();
 
-	virtual void Initialize();
+	// 미션 생성 직후 외부(MissionManager)에서 호출. InitData()로 초기화를 끝낸 뒤 Ready 상태로 전이
+	// virtual이 아닌 이유: 자식이 순서를 바꿔 초기화 전에 Ready가 브로드캐스트되는 일을 막기 위함
+	void Initialize();
 
 protected:
+
+	// 자식 미션별 데이터/리소스 초기화. 자식은 Super::InitData() 호출 후 자기 초기화를 추가
+	virtual void InitData();
 
 	virtual void OnReady();
 

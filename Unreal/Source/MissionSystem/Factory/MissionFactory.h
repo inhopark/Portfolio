@@ -13,7 +13,8 @@ class MISSIONSYSTEM_API UMissionFactory : public UObject
 
 private:
 
-	TMap<EMissionUnique, TFunction<UBaseMission*(UObject*)>> MissionCreators;
+	UPROPERTY()
+	TMap<EMissionUnique, TSubclassOf<UBaseMission>> MissionClasses;
 
 public:
 
@@ -23,22 +24,6 @@ public:
 
 private:
 
-	template <typename TMissionClass>
-	void RegisterMission(EMissionUnique MissionUnique);
+	void RegisterMission(EMissionUnique MissionUnique, TSubclassOf<UBaseMission> MissionClass);
 
 };// end class
-
-template <typename TMissionClass>
-void UMissionFactory::RegisterMission(EMissionUnique MissionUnique)
-{
-	if(MissionCreators.Contains(MissionUnique) == true)
-	{
-		UE_LOG(LogTemp, Error, TEXT("## MissionFactory ## RegisterMission ## Duplicate Mission ## MissionUnique : %s"), *UEnum::GetValueAsString(MissionUnique));
-		return;
-	}
-
-	MissionCreators.Add(MissionUnique, [](UObject* Outer) -> UBaseMission*
-	{
-		return NewObject<TMissionClass>(Outer);
-	});
-}

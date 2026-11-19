@@ -80,7 +80,7 @@ void UMissionManager::ShowMainMissionWidget(EMissionUnique MissionUnique, ANPC* 
 	}
 
 	// 이미 미션이 진행 중이면 대화창을 띄우지 않음
-	if(CurrentMission != nullptr && CurrentMission->GetMissionState() == EMissionState::InProgress)
+	if(CurrentMission != nullptr)
 	{
 		return;
 	}
@@ -89,14 +89,10 @@ void UMissionManager::ShowMainMissionWidget(EMissionUnique MissionUnique, ANPC* 
 
 	// 마우스 커서 모드
 	SetUICursorMode(true);
-
+	// Show UI
 	MainMissionWidget->SetVisibility(ESlateVisibility::Visible);
-
-	// 현재 미션 진행 중.
-	if(CurrentMission == nullptr)
-	{
-		RequestMission(MissionUnique);
-	}
+	// 미션 Ready 상태
+	RequestMission(MissionUnique);
 }
 
 void UMissionManager::HideMainMissionWidget()

@@ -87,8 +87,6 @@ private:
 
 	void ClearCurrentMission();
 
-	void MovePlayerToPlayerStart(class AMissionSystemCharacter* MissionCharacter);
-
 	// 디펜스 모드에서 보여지는 UI 위젯 Visible 여부를 설정
 	void SetDefenseHUDVisible(bool bVisible);
 

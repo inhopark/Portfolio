@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/GameModeBase.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -151,6 +152,15 @@ void AMissionSystemCharacter::ResetHP()
 	OnHPChanged.Broadcast(CurrentHP, MaxHP);
 }
 
+void AMissionSystemCharacter::ResetPlayer()
+{
+	MoveToPlayerStart();
+	SetPlayMode(ECharacterPlayMode::Normal);
+	ResetHP();
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("## MissionSystemCharacter ## ResetPlayer ## Location : %s"), *GetActorLocation().ToString());
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -236,4 +246,34 @@ void AMissionSystemCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AMissionSystemCharacter::MoveToPlayerStart()
+{
+	UWorld* World = GetWorld();
+	if(World == nullptr)
+	{
+		return;
+	}
+
+	AGameModeBase* GameMode = World->GetAuthGameMode();
+	if(GameMode == nullptr)
+	{
+		return;
+	}
+
+	AController* OwnerController = GetController();
+	if(OwnerController == nullptr)
+	{
+		return;
+	}
+
+	AActor* PlayerStart = GameMode->FindPlayerStart(OwnerController);
+	if(PlayerStart == nullptr)
+	{
+		UE_LOG(LogTemplateCharacter, Log, TEXT("## MissionSystemCharacter ## MoveToPlayerStart ## Warning : PlayerStart Not Found"));
+		return;
+	}
+
+	SetActorLocationAndRotation(PlayerStart->GetActorLocation(), PlayerStart->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
 }

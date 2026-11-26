@@ -113,6 +113,8 @@ public:
 	// HP를 MaxHP로 회복시키고 OnHPChanged를 브로드캐스트
 	void ResetHP();
 
+	void ResetPlayer();
+
 	FORCEINLINE float GetCurrentHP() const { return CurrentHP; }
 	FORCEINLINE float GetMaxHP() const { return MaxHP; }
 
@@ -123,5 +125,9 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+private:
+
+	void MoveToPlayerStart();
 
 };// end class

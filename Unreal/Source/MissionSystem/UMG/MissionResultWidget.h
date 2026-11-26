@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UMG/BaseWidget.h"
 #include "Define/MissionDefine.h"
 #include "MissionResultWidget.generated.h"
 
@@ -10,7 +10,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMissionResultConfirmed);
 // 미션 성공/실패 결과창. WBP_MainMissionSuccess, WBP_MainMissionFail이 이 클래스를 사용하며,
 // 위젯 트리는 WBP_MainMission을 복제해 만들어졌기 때문에 바인딩 이름을 그대로 유지함.
 UCLASS()
-class MISSIONSYSTEM_API UMissionResultWidget : public UUserWidget
+class MISSIONSYSTEM_API UMissionResultWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 

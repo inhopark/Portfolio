@@ -1,14 +1,14 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UMG/BaseWidget.h"
 #include "Define/MissionDefine.h"
 #include "MainMissionWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionButtonAction, EMissionButtonAction, Action);
 
 UCLASS()
-class MISSIONSYSTEM_API UMainMissionWidget : public UUserWidget
+class MISSIONSYSTEM_API UMainMissionWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 

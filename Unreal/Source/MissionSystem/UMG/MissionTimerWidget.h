@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UMG/BaseWidget.h"
 #include "MissionTimerWidget.generated.h"
 
 class UProgressBar;
 class UTextBlock;
 
 UCLASS()
-class MISSIONSYSTEM_API UMissionTimerWidget : public UUserWidget
+class MISSIONSYSTEM_API UMissionTimerWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
@@ -21,6 +21,8 @@ protected:
 	class UTextBlock* TimerText = nullptr;    // 남은 초 텍스트
 
 public:
+
+	UMissionTimerWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 

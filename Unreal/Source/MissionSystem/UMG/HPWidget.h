@@ -1,14 +1,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UMG/BaseWidget.h"
 #include "HPWidget.generated.h"
 
 class UProgressBar;
 class UTextBlock;
+class AMissionSystemCharacter;
 
 UCLASS()
-class MISSIONSYSTEM_API UHPWidget : public UUserWidget
+class MISSIONSYSTEM_API UHPWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
@@ -29,10 +30,20 @@ private:
 	float TargetPercent = 1.0f;
 	float DisplayedPercent = 1.0f;
 
+	TWeakObjectPtr<AMissionSystemCharacter> BoundPlayer;
+
 public:
+
+	UHPWidget(const FObjectInitializer& ObjectInitializer);
 
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual void NativeDestruct() override;
+
+protected:
+
+	virtual void OnShow() override;
+	virtual void OnHide() override;
 
 public:
 
@@ -42,5 +53,8 @@ private:
 
 	UFUNCTION()
 	void HandleHPChanged(float CurrentHP, float MaxHP);
+
+	void BindPlayer();
+	void UnbindPlayer();
 
 };// end class

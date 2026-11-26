@@ -1,5 +1,5 @@
 #include "DefenseMinigameMission.h"
-#include "Manager/DefenseMinigameController.h"
+#include "Controllers/DefenseMinigameController.h"
 #include "Character/User/MissionSystemCharacter.h"
 
 void UDefenseMinigameMission::InitData()

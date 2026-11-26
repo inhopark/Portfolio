@@ -1,19 +1,24 @@
 #include "MainPlayerController.h"
 #include "Manager/MissionManager.h"
-#include "Manager/MissionAutoCycleController.h"
+#include "Manager/UIManager.h"
+#include "Controllers/MissionAutoCycleController.h"
 #include "UMG/MainMissionWidget.h"
 #include "UMG/MissionResultWidget.h"
 #include "UMG/HPWidget.h"
 #include "UMG/MissionTimerWidget.h"
+#include "Engine/LocalPlayer.h"
 
 void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MainMissionWidgetInstance = CreateAndAddWidget(MainMissionWidgetClass, TEXT("/Game/UMG/WBP_MainMission.WBP_MainMission_C"));
-	MissionResultWidgetInstance = CreateAndAddWidget(MissionResultWidgetClass, TEXT("/Game/UMG/WBP_MainMissionResult.WBP_MainMissionResult_C"));
-	HPWidgetInstance = CreateAndAddWidget(HPWidgetClass, TEXT("/Game/UMG/WBP_HP.WBP_HP_C"));
-	MissionTimerWidgetInstance = CreateAndAddWidget(MissionTimerWidgetClass, TEXT("/Game/UMG/WBP_MissionTimer.WBP_MissionTimer_C"));
+	UUIManager* UIManager = GetUIManager();
+	if(UIManager == nullptr)
+	{
+		return;
+	}
+
+	UIManager->InitializeUI(this);
 
 	UGameInstance* GameInstance = GetGameInstance();
 	if(GameInstance == nullptr)
@@ -24,25 +29,35 @@ void AMainPlayerController::BeginPlay()
 	UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>();
 	if(MissionManager != nullptr)
 	{
-		MissionManager->RegisterMainMissionWidget(MainMissionWidgetInstance);
-		MissionManager->RegisterMissionResultWidgets(MissionResultWidgetInstance);
+		MissionManager->RegisterMainMissionWidget(UIManager->GetUI<UMainMissionWidget>(EUIType::MainMission));
+		MissionManager->RegisterMissionResultWidgets(UIManager->GetUI<UMissionResultWidget>(EUIType::MissionResult));
 	}
 }
 
 void AMainPlayerController::SetDefenseHUDVisible(bool bVisible)
 {
-	// 버튼이 없는 순수 표시용 위젯들이므로 HitTestInvisible로 노출해
-	// 다른 위젯(미션 결과창 등)의 클릭을 가로채지 않도록 함
-	const ESlateVisibility TargetVisibility = bVisible == true ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden;
-
-	if(HPWidgetInstance != nullptr)
+	UUIManager* UIManager = GetUIManager();
+	if(UIManager == nullptr)
 	{
-		HPWidgetInstance->SetVisibility(TargetVisibility);
+		return;
 	}
 
-	if(MissionTimerWidgetInstance != nullptr)
+	UHPWidget* HPWidget = UIManager->GetUI<UHPWidget>(EUIType::HP);
+	UMissionTimerWidget* MissionTimerWidget = UIManager->GetUI<UMissionTimerWidget>(EUIType::MissionTimer);
+	if(HPWidget == nullptr || MissionTimerWidget == nullptr)
 	{
-		MissionTimerWidgetInstance->SetVisibility(TargetVisibility);
+		return;
+	}
+
+	if(bVisible == true)
+	{
+		HPWidget->Show();
+		MissionTimerWidget->Show();
+	}
+	else
+	{
+		HPWidget->Hide();
+		MissionTimerWidget->Hide();
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("## MainPlayerController ## SetDefenseHUDVisible ## bVisible : %s"), *LexToString(bVisible));
@@ -61,4 +76,16 @@ void AMainPlayerController::ToggleAutoCycleMode()
 	{
 		AutoCycleController->ToggleAutoCycleMode();
 	}
+}
+
+UUIManager* AMainPlayerController::GetUIManager() const
+{
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if(LocalPlayer == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("## MainPlayerController ## GetUIManager ## Error : LocalPlayer Is Null"));
+		return nullptr;
+	}
+
+	return LocalPlayer->GetSubsystem<UUIManager>();
 }

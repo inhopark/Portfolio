@@ -5,7 +5,6 @@
 #include "Character/User/MissionSystemCharacter.h"
 #include "Character/NPC/NPC.h"
 #include "Controllers/MainPlayerController.h"
-#include "GameFramework/GameModeBase.h"
 
 void UMissionManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -90,7 +89,7 @@ void UMissionManager::ShowMainMissionWidget(EMissionUnique MissionUnique, ANPC* 
 	// 마우스 커서 모드
 	SetUICursorMode(true);
 	// Show UI
-	MainMissionWidget->SetVisibility(ESlateVisibility::Visible);
+	MainMissionWidget->Show();
 	// 미션 Ready 상태
 	RequestMission(MissionUnique);
 }
@@ -102,7 +101,7 @@ void UMissionManager::HideMainMissionWidget()
 
 	if(MainMissionWidget != nullptr)
 	{
-		MainMissionWidget->SetVisibility(ESlateVisibility::Hidden);
+		MainMissionWidget->Hide();
 	}
 }
 
@@ -225,21 +224,14 @@ void UMissionManager::ShowMissionResultWidget(EMissionState NewState)
 	SetUICursorMode(true);
 
 	MissionResultWidget->SetResultState(NewState);
-	MissionResultWidget->SetVisibility(ESlateVisibility::Visible);
+	MissionResultWidget->Show();
 }
 
 void UMissionManager::HandleMissionResultConfirmed()
 {
 	if(MissionResultWidget != nullptr)
 	{
-		MissionResultWidget->SetVisibility(ESlateVisibility::Hidden);
-	}
-
-	// 체력을 회복시켜 다음 미션은 처음 상태로 시작하도록 함
-	AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
-	if(MissionCharacter != nullptr)
-	{
-		MissionCharacter->ResetHP();
+		MissionResultWidget->Hide();
 	}
 
 	// NPC 복귀, 디펜스 모드/스폰 종료, 위젯 정리 등 처음 상태로 리셋
@@ -260,9 +252,7 @@ void UMissionManager::ClearCurrentMission()
 	AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
 	if(MissionCharacter != nullptr)
 	{
-		MovePlayerToPlayerStart(MissionCharacter);
-
-		MissionCharacter->SetPlayMode(ECharacterPlayMode::Normal);
+		MissionCharacter->ResetPlayer();
 	}
 
 	// 미션 종료 시 숨겨졌던 NPC 다시 등장
@@ -315,41 +305,6 @@ void UMissionManager::SetDefenseHUDVisible(bool bVisible)
 	{
 		MainPlayerController->SetDefenseHUDVisible(bVisible);
 	}
-}
-
-void UMissionManager::MovePlayerToPlayerStart(AMissionSystemCharacter* MissionCharacter)
-{
-	if(MissionCharacter == nullptr)
-	{
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if(World == nullptr)
-	{
-		return;
-	}
-
-	AGameModeBase* GameMode = World->GetAuthGameMode();
-	if(GameMode == nullptr)
-	{
-		return;
-	}
-
-	APlayerController* PlayerController = World->GetFirstPlayerController();
-	if(PlayerController == nullptr)
-	{
-		return;
-	}
-
-	AActor* PlayerStart = GameMode->FindPlayerStart(PlayerController);
-	if(PlayerStart == nullptr)
-	{
-		UE_LOG(LogTemp, Log, TEXT("## MissionManager ## MovePlayerToPlayerStart ## Warning : PlayerStart Not Found"));
-		return;
-	}
-
-	MissionCharacter->SetActorLocationAndRotation(PlayerStart->GetActorLocation(), PlayerStart->GetActorRotation(), false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 AMissionSystemCharacter* UMissionManager::GetMissionCharacter() const

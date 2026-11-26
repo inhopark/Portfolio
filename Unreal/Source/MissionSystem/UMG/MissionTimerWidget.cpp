@@ -4,6 +4,11 @@
 #include "Manager/MissionManager.h"
 #include "Kismet/GameplayStatics.h"
 
+UMissionTimerWidget::UMissionTimerWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	ShowVisibility = ESlateVisibility::HitTestInvisible;
+}
+
 void UMissionTimerWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);

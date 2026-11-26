@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ea811927e5f40b4fa1503fd04652e43, type: 3}
+  m_Name: CharData
+  m_EditorClassIdentifier: Assembly-CSharp::CharData
+  _player:
+    Prefab: {fileID: 2186344218922615214, guid: 984d8f2c4ed68524fb9a42826f9ae2f4, type: 3}
+    Position: {x: 0, y: 0, z: -5.0000005}
+    Rotation: {x: 0, y: 0, z: 0}
+  _npcList:
+  - Prefab: {fileID: 5922987047155190776, guid: eab2c888fe5486f4ba9f322b1f07db7f, type: 3}
+    Position: {x: 0, y: 0, z: 5}
+    Rotation: {x: 0, y: 0, z: 0}

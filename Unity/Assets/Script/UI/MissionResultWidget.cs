@@ -2,27 +2,31 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MissionSystem
+/// One widget reused for both Succeeded and Failed outcomes (only the title text swaps).
+public class MissionResultWidget : BaseWidget
 {
-    /// One widget reused for both Succeeded and Failed outcomes (only the title text swaps).
-    public class MissionResultWidget : MonoBehaviour
+    public Text titleText;
+    public Button confirmButton;
+
+    public event Action OnConfirmed;
+
+    private void Awake()
     {
-        public Text titleText;
-        public Button confirmButton;
+        confirmButton.onClick.AddListener(() => OnConfirmed?.Invoke());
+    }
 
-        public event Action OnConfirmed;
+    public override void Show()
+    {
+        gameObject.SetActive(true);
+    }
 
-        private void Awake()
-        {
-            confirmButton.onClick.AddListener(() => OnConfirmed?.Invoke());
-        }
+    public override void Hide()
+    {
+        gameObject.SetActive(false);
+    }
 
-        public void Show() => gameObject.SetActive(true);
-        public void Hide() => gameObject.SetActive(false);
-
-        public void SetResultState(MissionState state)
-        {
-            titleText.text = state == MissionState.Succeeded ? MissionText.MissionSuccess : MissionText.MissionFailed;
-        }
+    public void SetResultState(MissionState state)
+    {
+        titleText.text = state == MissionState.Succeeded ? MissionText.MissionSuccess : MissionText.MissionFailed;
     }
 }

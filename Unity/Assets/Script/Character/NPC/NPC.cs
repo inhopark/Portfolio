@@ -1,64 +1,61 @@
 using UnityEngine;
 
-namespace MissionSystem
+public class NPC : MonoBehaviour
 {
-    public class NPC : MonoBehaviour
+    public MissionUnique missionUnique = MissionUnique.Act1Chapter1;
+
+    private Renderer[] _renderers;
+    private Collider[] _colliders;
+
+    private void Awake()
     {
-        public MissionUnique missionUnique = MissionUnique.Act1Chapter1;
+        _renderers = GetComponentsInChildren<Renderer>(true);
+        _colliders = GetComponentsInChildren<Collider>(true);
+    }
 
-        private Renderer[] _renderers;
-        private Collider[] _colliders;
-
-        private void Awake()
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.GetComponent<PlayerCharacter>() == null)
         {
-            _renderers = GetComponentsInChildren<Renderer>(true);
-            _colliders = GetComponentsInChildren<Collider>(true);
+            return;
         }
 
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.GetComponent<PlayerCharacter>() == null)
-            {
-                return;
-            }
+        MissionManager.Instance.ShowMainMissionWidget(missionUnique, this);
+    }
 
-            MissionManager.Instance.ShowMainMissionWidget(missionUnique, this);
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<PlayerCharacter>() == null)
+        {
+            return;
         }
 
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.GetComponent<PlayerCharacter>() == null)
-            {
-                return;
-            }
+        MissionManager.Instance.HideMainMissionWidget();
+    }
 
-            MissionManager.Instance.HideMainMissionWidget();
+    public void Show()
+    {
+        foreach (Renderer r in _renderers)
+        {
+            r.enabled = true;
         }
 
-        public void Show()
+        foreach (Collider c in _colliders)
         {
-            foreach (Renderer r in _renderers)
-            {
-                r.enabled = true;
-            }
+            c.enabled = true;
+        }
+    }
 
-            foreach (Collider c in _colliders)
-            {
-                c.enabled = true;
-            }
+    public void Hide()
+    {
+        foreach (Renderer r in _renderers)
+        {
+            r.enabled = false;
         }
 
-        public void Hide()
+        foreach (Collider c in _colliders)
         {
-            foreach (Renderer r in _renderers)
-            {
-                r.enabled = false;
-            }
-
-            foreach (Collider c in _colliders)
-            {
-                c.enabled = false;
-            }
+            c.enabled = false;
         }
     }
 }

@@ -1,45 +1,49 @@
-namespace MissionSystem
+/// Template Method: owns and drives a DefenseMinigameController through the mission's own state hooks.
+public abstract class DefenseMinigameMission : BaseMission
 {
-    /// Template Method: owns and drives a DefenseMinigameController through the mission's own state hooks.
-    public abstract class DefenseMinigameMission : BaseMission
+    private DefenseMinigameController _defenseMinigame;
+
+    public DefenseMinigameController GetOrCreateDefenseMinigameController()
     {
-        private DefenseMinigameController _defenseMinigame;
-
-        public DefenseMinigameController GetOrCreateDefenseMinigameController()
+        if (_defenseMinigame == null)
         {
-            if (_defenseMinigame == null)
-            {
-                _defenseMinigame = new DefenseMinigameController();
-                _defenseMinigame.OnSurvived += HandleMinigameSurvived;
-            }
-
-            return _defenseMinigame;
+            _defenseMinigame = new DefenseMinigameController();
+            _defenseMinigame.OnSurvived += HandleMinigameSurvived;
         }
 
-        protected override void EnterInProgressState()
-        {
-            base.EnterInProgressState();
-            GetOrCreateDefenseMinigameController().Start(MissionPlayer, MissionManager.Instance);
-        }
+        return _defenseMinigame;
+    }
 
-        protected override void EnterSucceededState()
-        {
-            base.EnterSucceededState();
-            _defenseMinigame?.Stop();
-        }
+    protected override void EnterInProgressState()
+    {
+        base.EnterInProgressState();
+        GetOrCreateDefenseMinigameController().Start(MissionPlayer, MissionManager.Instance);
+    }
 
-        protected override void EnterFailedState()
-        {
-            base.EnterFailedState();
-            _defenseMinigame?.Stop();
-        }
+    protected override void EnterSucceededState()
+    {
+        base.EnterSucceededState();
+        _defenseMinigame?.Stop();
+    }
 
-        private void HandleMinigameSurvived()
-        {
-            SuccessMission();
-        }
+    protected override void EnterFailedState()
+    {
+        base.EnterFailedState();
+        _defenseMinigame?.Stop();
+    }
 
-        public override float GetMinigameRemainingTime() => _defenseMinigame?.GetRemainingTime() ?? -1f;
-        public override float GetMinigameTotalDuration() => _defenseMinigame?.SurvivalDuration ?? 0f;
+    private void HandleMinigameSurvived()
+    {
+        SuccessMission();
+    }
+
+    public override float GetMinigameRemainingTime()
+    {
+        return _defenseMinigame?.GetRemainingTime() ?? -1f;
+    }
+
+    public override float GetMinigameTotalDuration()
+    {
+        return _defenseMinigame?.SurvivalDuration ?? 0f;
     }
 }

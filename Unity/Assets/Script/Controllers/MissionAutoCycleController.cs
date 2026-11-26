@@ -1,0 +1,264 @@
+using System;
+using System.Collections;
+using UnityEngine;
+
+/// Debug/demo tool: cycles NPC-contact -> Agree -> minigame -> result-confirm with no human input.
+/// Only calls pre-existing public MissionManager methods, same ones a human clicking would trigger.
+public class MissionAutoCycleController
+{
+    private const float AutoApproachMoveSpeed = 6.5f;
+    private const float AutoDodgeMoveSpeed = 5f;
+    private const float DodgeSwitchDistance = 2.5f;
+    private const float NpcArriveDistance = 1.5f;
+    private const float AutoAgreeDelay = 1.5f;
+    private const float AutoConfirmDelay = 1.5f;
+    private const float AutoCycleSurvivalDuration = 5f;
+
+    private ICoroutineRunner _runner = null;
+    private PlayerCharacter _player = null;
+    private NPC _targetNpc = null;
+
+    private bool _isEnabled = false;
+
+    private Coroutine _approachRoutine = null;
+    private Coroutine _dodgeRoutine = null;
+    private Coroutine _actionDelayRoutine = null;
+
+    public void Initialize(ICoroutineRunner runner, PlayerCharacter player)
+    {
+        _runner = runner;
+        _player = player;
+    }
+
+    public void Deinitialize()
+    {
+        StopAutoCycle();
+    }
+
+    public void ToggleAutoCycleMode()
+    {
+        if(_isEnabled == true)
+        {
+            StopAutoCycle();
+            return;
+        }
+
+        StartAutoCycle();
+    }
+
+    private void StartAutoCycle()
+    {
+        if(_player == null)
+        {
+            Debug.LogError("## MissionAutoCycleController ## StartAutoCycle ## Error : Player Character Not Found");
+            return;
+        }
+
+        _targetNpc = FindNearestNpc();
+        if(_targetNpc == null)
+        {
+            Debug.LogError("## MissionAutoCycleController ## StartAutoCycle ## Error : NPC Not Found In Scene");
+            return;
+        }
+
+        SetAutoCycleEnabled(true);
+        MissionManager.Instance.OnAnyMissionStateChanged += HandleMissionStateChanged;
+        StartApproachingTargetNpc();
+    }
+
+    /// Releases manual control back to the player and stops listening for mission state changes.
+    /// Called both when F8 is pressed again mid-cycle and when the cycle finishes on its own.
+    private void StopAutoCycle()
+    {
+        StopApproachingTargetNpc();
+        StopDodging();
+        StopActionDelay();
+
+        _targetNpc = null;
+
+        if(_isEnabled == false)
+        {
+            return;
+        }
+
+        if(MissionManager.IsInstanceValid() == true)
+        {
+            MissionManager.Instance.OnAnyMissionStateChanged -= HandleMissionStateChanged;
+        }
+        SetAutoCycleEnabled(false);
+    }
+
+    private void SetAutoCycleEnabled(bool isEnabled)
+    {
+        _isEnabled = isEnabled;
+
+        if(_player != null)
+        {
+            _player.SetAutoControlActive(isEnabled);
+        }
+
+        Debug.Log($"## MissionAutoCycleController ## SetAutoCycleEnabled ## IsEnabled : {isEnabled}");
+    }
+
+    private void StartApproachingTargetNpc()
+    {
+        StopApproachingTargetNpc();
+        _approachRoutine = _runner.StartCoroutine(ApproachTargetNpcRoutine());
+    }
+
+    private void StopApproachingTargetNpc()
+    {
+        StopRoutine(ref _approachRoutine);
+    }
+
+    private void StartDodging()
+    {
+        StopDodging();
+        _dodgeRoutine = _runner.StartCoroutine(DodgeRoutine());
+    }
+
+    private void StopDodging()
+    {
+        StopRoutine(ref _dodgeRoutine);
+    }
+
+    private void StartActionDelay(float delay, Action action)
+    {
+        StopActionDelay();
+        _actionDelayRoutine = _runner.StartCoroutine(ActionDelayRoutine(delay, action));
+    }
+
+    private void StopActionDelay()
+    {
+        StopRoutine(ref _actionDelayRoutine);
+    }
+
+    private IEnumerator ApproachTargetNpcRoutine()
+    {
+        while (_targetNpc != null && Vector3.Distance(_player.transform.position, _targetNpc.transform.position) > NpcArriveDistance)
+        {
+            Vector3 direction = _targetNpc.transform.position - _player.transform.position;
+            direction.y = 0f;
+            if(direction.sqrMagnitude > 0.0001f)
+            {
+                _player.AutoMove(direction.normalized * AutoApproachMoveSpeed * Time.deltaTime);
+            }
+            yield return null;
+        }
+
+        _player.AutoMove(Vector3.zero);
+        _approachRoutine = null;
+    }
+
+    private IEnumerator DodgeRoutine()
+    {
+        float direction = 1f;
+        float traveled = 0f;
+
+        while (true)
+        {
+            float step = AutoDodgeMoveSpeed * Time.deltaTime;
+            _player.AutoMove(Vector3.right * direction * step);
+            traveled += step;
+
+            if(traveled >= DodgeSwitchDistance)
+            {
+                traveled = 0f;
+                direction *= -1f;
+            }
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator ActionDelayRoutine(float delay, Action action)
+    {
+        yield return new WaitForSeconds(delay);
+
+        _actionDelayRoutine = null;
+        action?.Invoke();
+    }
+
+    private void HandleMissionStateChanged(MissionState newState)
+    {
+        if(_isEnabled == false)
+        {
+            return;
+        }
+
+        switch (newState)
+        {
+            case MissionState.Ready:
+                {
+                    StopApproachingTargetNpc();
+                    _player.AutoMove(Vector3.zero);
+                    StartActionDelay(AutoAgreeDelay, TriggerAutoAgree);
+                }
+                break;
+            case MissionState.InProgress:
+                {
+                    StartDodging();
+                }
+                break;
+            case MissionState.Succeeded:
+            case MissionState.Failed:
+                {
+                    StopDodging();
+                    _player.AutoMove(Vector3.zero);
+                    StartActionDelay(AutoConfirmDelay, TriggerAutoConfirm);
+                }
+                break;
+        }
+    }
+
+    private void TriggerAutoAgree()
+    {
+        DefenseMinigameMission defenseMission = MissionManager.Instance.CurrentMission as DefenseMinigameMission;
+        if(defenseMission != null)
+        {
+            defenseMission.GetOrCreateDefenseMinigameController().SetSurvivalDurationOverride(AutoCycleSurvivalDuration);
+        }
+
+        MissionManager.Instance.HandleMissionButtonAction(MissionButtonAction.Left);
+    }
+
+    private void TriggerAutoConfirm()
+    {
+        MissionManager.Instance.HandleMissionResultConfirmed();
+
+        StopAutoCycle();
+    }
+
+    private NPC FindNearestNpc()
+    {
+        NPC[] npcs = UnityEngine.Object.FindObjectsByType<NPC>();
+        NPC nearest = null;
+        float bestDistance = float.MaxValue;
+
+        foreach (NPC npc in npcs)
+        {
+            float distance = Vector3.Distance(_player.transform.position, npc.transform.position);
+            if(distance < bestDistance)
+            {
+                bestDistance = distance;
+                nearest = npc;
+            }
+        }
+
+        return nearest;
+    }
+
+    private void StopRoutine(ref Coroutine routine)
+    {
+        if(routine == null)
+        {
+            return;
+        }
+
+        if(_runner != null)
+        {
+            _runner.StopCoroutine(routine);
+        }
+        routine = null;
+    }
+}// end class

@@ -1,28 +1,63 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-namespace MissionSystem
+/// Owns the 4 UI widget instances and registers them with MissionManager.
+public class MainController : MonoBehaviour, ICoroutineRunner
 {
-    /// Owns the 4 UI widget instances and registers them with MissionManager.
-    public class MainController : MonoBehaviour
+    private readonly MissionAutoCycleController _autoCycleController = new MissionAutoCycleController();
+
+    private void Awake()
     {
-        public MainMissionWidget mainMissionWidget;
-        public MissionResultWidget missionResultWidget;
-        public HPWidget hpWidget;
-        public MissionTimerWidget missionTimerWidget;
+        InitManager();
+    }
 
-        private void Start()
+    private void Start()
+    {
+        MissionManager.Instance.RegisterMainController(this);
+
+        _autoCycleController.Initialize(this, CharManager.Instance.Player);
+    }
+
+    private void Update()
+    {
+        if(Keyboard.current != null && Keyboard.current.f8Key.wasPressedThisFrame == true)
         {
-            mainMissionWidget.Hide();
-            missionResultWidget.Hide();
-            SetDefenseHUDVisible(false);
-
-            MissionManager.Instance.RegisterWidgets(this, mainMissionWidget, missionResultWidget, hpWidget, missionTimerWidget);
-        }
-
-        public void SetDefenseHUDVisible(bool visible)
-        {
-            hpWidget.SetVisible(visible);
-            missionTimerWidget.SetVisible(visible);
+            ToggleAutoCycleMode();
         }
     }
-}
+
+    private void OnDestroy()
+    {
+        _autoCycleController.Deinitialize();
+    }
+
+    public void SetDefenseHUDVisible(bool visible)
+    {
+        HPWidget hpWidget = UIManager.Instance.GetUI<HPWidget>(EUIType.HP);
+        MissionTimerWidget missionTimerWidget = UIManager.Instance.GetUI<MissionTimerWidget>(EUIType.MissionTimer);
+        if(visible == true)
+        {
+            hpWidget.Show();
+            missionTimerWidget.Show();
+        }
+        else
+        {
+            hpWidget.Hide();
+            missionTimerWidget.Hide();
+        }
+
+        Debug.Log($"## MainController ## SetDefenseHUDVisible ## Visible : {visible}");
+    }
+
+    public void ToggleAutoCycleMode()
+    {
+        _autoCycleController.ToggleAutoCycleMode();
+    }
+
+    private void InitManager()
+    {
+        UIManager.Instance.Initialize();
+        CharManager.Instance.Initialize();
+        MissionManager.Instance.Initialize();
+    }
+}// end class

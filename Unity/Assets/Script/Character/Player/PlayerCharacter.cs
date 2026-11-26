@@ -75,18 +75,27 @@ public class PlayerCharacter : MonoBehaviour
         if (inputActions != null)
         {
             InputActionMap map = inputActions.FindActionMap("Player");
-            _moveAction = map?.FindAction("Move");
+            if(map != null)
+            {
+                _moveAction = map.FindAction("Move");
+            }
         }
     }
 
     private void OnEnable()
     {
-        _moveAction?.Enable();
+        if(_moveAction != null)
+        {
+            _moveAction.Enable();
+        }
     }
 
     private void OnDisable()
     {
-        _moveAction?.Disable();
+        if(_moveAction != null)
+        {
+            _moveAction.Disable();
+        }
     }
 
     private void Update()

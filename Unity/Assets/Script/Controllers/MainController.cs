@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// Owns the 4 UI widget instances and registers them with MissionManager.
+/// Initializes the managers in order and registers the mission widgets with MissionManager.
 public class MainController : MonoBehaviour, ICoroutineRunner
 {
     private readonly MissionAutoCycleController _autoCycleController = new MissionAutoCycleController();

@@ -20,7 +20,7 @@ public abstract class DefenseMinigameMission : BaseMission
     protected override void OnInProgress()
     {
         base.OnInProgress();
-        if (_defenseMinigame == null)
+        if(_defenseMinigame == null)
         {
             Debug.LogError($"## DefenseMinigameMission ## OnInProgress ## Error : DefenseMinigame Not Initialized ## Mission : {GetType().Name}");
             return;
@@ -32,13 +32,19 @@ public abstract class DefenseMinigameMission : BaseMission
     protected override void OnSucceeded()
     {
         base.OnSucceeded();
-        _defenseMinigame?.Stop();
+        if(_defenseMinigame != null)
+        {
+            _defenseMinigame.Stop();
+        }
     }
 
     protected override void OnFailed()
     {
         base.OnFailed();
-        _defenseMinigame?.Stop();
+        if(_defenseMinigame != null)
+        {
+            _defenseMinigame.Stop();
+        }
     }
 
     private void HandleMinigameSurvived()
@@ -48,11 +54,21 @@ public abstract class DefenseMinigameMission : BaseMission
 
     public override float GetMinigameRemainingTime()
     {
-        return _defenseMinigame?.GetRemainingTime() ?? -1f;
+        if(_defenseMinigame == null)
+        {
+            return -1f;
+        }
+
+        return _defenseMinigame.GetRemainingTime();
     }
 
     public override float GetMinigameTotalDuration()
     {
-        return _defenseMinigame?.SurvivalDuration ?? 0f;
+        if(_defenseMinigame == null)
+        {
+            return 0f;
+        }
+
+        return _defenseMinigame.SurvivalDuration;
     }
 }

@@ -219,6 +219,8 @@ void UMissionAutoCycleController::TriggerAutoConfirm()
 
 	// 한 사이클(NPC 접근 -> Agree -> 디펜스 -> Confirm)만 돌고 자동으로 꺼짐
 	bIsEnabled = false;
+
+	UE_LOG(LogTemp, Log, TEXT("## MissionAutoCycleController ## TriggerAutoConfirm ## AutoCycleMode : OFF"));
 }
 
 UMissionManager* UMissionAutoCycleController::GetMissionManager() const

@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// Debug/demo tool: cycles NPC-contact -> Agree -> minigame -> result-confirm with no human input.
-/// Only calls pre-existing public MissionManager methods, same ones a human clicking would trigger.
+/// Drives the mission through public MissionManager methods; only movement, NPC lookup and the survival-time override are handled here directly.
 public class MissionAutoCycleController
 {
     private const float AutoApproachMoveSpeed = 6.5f;
@@ -231,12 +232,17 @@ public class MissionAutoCycleController
 
     private NPC FindNearestNpc()
     {
-        NPC[] npcs = UnityEngine.Object.FindObjectsByType<NPC>();
+        IReadOnlyList<NPC> npcs = CharManager.Instance.NPCList;
         NPC nearest = null;
         float bestDistance = float.MaxValue;
 
         foreach (NPC npc in npcs)
         {
+            if(npc == null)
+            {
+                continue;
+            }
+
             float distance = Vector3.Distance(_player.transform.position, npc.transform.position);
             if(distance < bestDistance)
             {

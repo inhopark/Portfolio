@@ -10,6 +10,7 @@ public abstract class BaseMission
 
     public void Initialize()
     {
+        InitData();
         SetState(MissionState.Ready);
     }
 
@@ -51,22 +52,22 @@ public abstract class BaseMission
         {
             case MissionState.Ready:
             {
-                EnterReadyState();
+                OnReady();
                 break;
             }
             case MissionState.InProgress:
             {
-                EnterInProgressState();
+                OnInProgress();
                 break;
             }
             case MissionState.Succeeded:
             {
-                EnterSucceededState();
+                OnSucceeded();
                 break;
             }
             case MissionState.Failed:
             {
-                EnterFailedState();
+                OnFailed();
                 break;
             }
         }
@@ -74,8 +75,9 @@ public abstract class BaseMission
         OnMissionStateChanged?.Invoke(newState);
     }
 
-    protected virtual void EnterReadyState() { }
-    protected virtual void EnterInProgressState() { }
-    protected virtual void EnterSucceededState() { }
-    protected virtual void EnterFailedState() { }
+    protected virtual void InitData() { }
+    protected virtual void OnReady() { }
+    protected virtual void OnInProgress() { }
+    protected virtual void OnSucceeded() { }
+    protected virtual void OnFailed() { }
 }

@@ -1,34 +1,43 @@
+using UnityEngine;
+
 /// Template Method: owns and drives a DefenseMinigameController through the mission's own state hooks.
 public abstract class DefenseMinigameMission : BaseMission
 {
     private DefenseMinigameController _defenseMinigame;
 
-    public DefenseMinigameController GetOrCreateDefenseMinigameController()
+    public DefenseMinigameController GetDefenseMinigameController()
     {
-        if (_defenseMinigame == null)
-        {
-            _defenseMinigame = new DefenseMinigameController();
-            _defenseMinigame.OnSurvived += HandleMinigameSurvived;
-        }
-
         return _defenseMinigame;
     }
 
-    protected override void EnterInProgressState()
+    protected override void InitData()
     {
-        base.EnterInProgressState();
-        GetOrCreateDefenseMinigameController().Start(MissionPlayer, MissionManager.Instance);
+        base.InitData();
+        _defenseMinigame = new DefenseMinigameController();
+        _defenseMinigame.OnSurvived += HandleMinigameSurvived;
     }
 
-    protected override void EnterSucceededState()
+    protected override void OnInProgress()
     {
-        base.EnterSucceededState();
+        base.OnInProgress();
+        if (_defenseMinigame == null)
+        {
+            Debug.LogError($"## DefenseMinigameMission ## OnInProgress ## Error : DefenseMinigame Not Initialized ## Mission : {GetType().Name}");
+            return;
+        }
+
+        _defenseMinigame.Start(MissionPlayer, MissionManager.Instance);
+    }
+
+    protected override void OnSucceeded()
+    {
+        base.OnSucceeded();
         _defenseMinigame?.Stop();
     }
 
-    protected override void EnterFailedState()
+    protected override void OnFailed()
     {
-        base.EnterFailedState();
+        base.OnFailed();
         _defenseMinigame?.Stop();
     }
 

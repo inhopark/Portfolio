@@ -216,7 +216,7 @@ public class MissionAutoCycleController
         DefenseMinigameMission defenseMission = MissionManager.Instance.CurrentMission as DefenseMinigameMission;
         if(defenseMission != null)
         {
-            defenseMission.GetOrCreateDefenseMinigameController().SetSurvivalDurationOverride(AutoCycleSurvivalDuration);
+            defenseMission.GetDefenseMinigameController().SetSurvivalDurationOverride(AutoCycleSurvivalDuration);
         }
 
         MissionManager.Instance.HandleMissionButtonAction(MissionButtonAction.Left);

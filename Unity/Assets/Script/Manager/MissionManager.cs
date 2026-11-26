@@ -42,6 +42,8 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
+
+        _missionFactory.Initialize();
     }
 
     private void OnDestroy()
@@ -233,6 +235,11 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
         }
 
         CurrentMission = _missionFactory.CreateMission(missionUnique);
+        if(CurrentMission == null)
+        {
+            return;
+        }
+
         CurrentMission.OnMissionStateChanged += HandleMissionStateChanged;
         CurrentMission.Initialize();
     }

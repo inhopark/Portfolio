@@ -15,16 +15,6 @@ public class MissionResultWidget : BaseWidget
         confirmButton.onClick.AddListener(() => OnConfirmed?.Invoke());
     }
 
-    public override void Show()
-    {
-        gameObject.SetActive(true);
-    }
-
-    public override void Hide()
-    {
-        gameObject.SetActive(false);
-    }
-
     public void SetResultState(MissionState state)
     {
         titleText.text = state == MissionState.Succeeded ? MissionText.MissionSuccess : MissionText.MissionFailed;

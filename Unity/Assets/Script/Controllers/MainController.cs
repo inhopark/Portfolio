@@ -58,6 +58,7 @@ public class MainController : MonoBehaviour, ICoroutineRunner
     {
         UIManager.Instance.Initialize();
         CharManager.Instance.Initialize();
-        MissionManager.Instance.Initialize();
+        MissionManager.Instance.RegisterMainMissionWidget(UIManager.Instance.GetUI<MainMissionWidget>(EUIType.MainMission));
+        MissionManager.Instance.RegisterMissionResultWidget(UIManager.Instance.GetUI<MissionResultWidget>(EUIType.MissionResult));
     }
 }// end class

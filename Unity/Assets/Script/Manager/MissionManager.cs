@@ -59,14 +59,6 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
         return _instance != null;
     }
 
-    public void Initialize()
-    {
-        RegisterMainMissionWidget(UIManager.Instance.GetUI<MainMissionWidget>(EUIType.MainMission));
-        RegisterMissionResultWidget(UIManager.Instance.GetUI<MissionResultWidget>(EUIType.MissionResult));
-
-        Debug.Log("## MissionManager ## Initialize ## Completed");
-    }
-
     public void RegisterMainController(MainController controller)
     {
         if(controller == null)
@@ -274,7 +266,11 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
             CurrentMission = null;
         }
 
-        CharManager.Instance.ResetPlayer();
+        PlayerCharacter player = GetPlayerCharacter();
+        if(player != null)
+        {
+            player.ResetPlayer();
+        }
 
         if(CurrentMissionNPC != null)
         {

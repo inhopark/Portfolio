@@ -6,7 +6,6 @@ public class HPWidget : BaseWidget
 {
     public Slider hpBar;
     public Text hpText;
-    public CanvasGroup canvasGroup;
 
     [SerializeField] private float barInterpSpeed = 2f;
 
@@ -30,23 +29,16 @@ public class HPWidget : BaseWidget
         UnbindPlayer();
     }
 
-    public override void Show()
+    protected override void OnShow()
     {
+        base.OnShow();
         BindPlayer();
-        SetVisible(true);
     }
 
-    public override void Hide()
+    protected override void OnHide()
     {
+        base.OnHide();
         UnbindPlayer();
-        SetVisible(false);
-    }
-
-    private void SetVisible(bool visible)
-    {
-        canvasGroup.alpha = visible == true ? 1f : 0f;
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable = false;
     }
 
     private void BindPlayer()

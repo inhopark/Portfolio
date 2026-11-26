@@ -526,4 +526,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MissionSystem.MissionTimerWidget
   timerBar: {fileID: 6522689915936210684}
   timerText: {fileID: 3771307211114167669}
-  canvasGroup: {fileID: 4401673849100706161}
+  _visibilityMode: 1

@@ -19,16 +19,6 @@ public class MainMissionWidget : BaseWidget
         rightButton.onClick.AddListener(() => OnMissionButtonAction?.Invoke(MissionButtonAction.Right));
     }
 
-    public override void Show()
-    {
-        gameObject.SetActive(true);
-    }
-
-    public override void Hide()
-    {
-        gameObject.SetActive(false);
-    }
-
     public void SetWidgetState(MissionState state)
     {
         // Buttons stay visible-but-non-functional during InProgress (relabeled Success/Fail) -

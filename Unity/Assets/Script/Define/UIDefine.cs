@@ -5,3 +5,9 @@ public enum EUIType
     HP,
     MissionTimer
 }
+
+public enum EWidgetVisibilityMode
+{
+    Active,
+    CanvasGroup
+}

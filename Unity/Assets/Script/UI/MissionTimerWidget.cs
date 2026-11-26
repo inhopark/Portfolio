@@ -7,7 +7,6 @@ public class MissionTimerWidget : BaseWidget
 {
     public Slider timerBar;
     public Text timerText;
-    public CanvasGroup canvasGroup;
 
     private void Update()
     {
@@ -24,22 +23,5 @@ public class MissionTimerWidget : BaseWidget
         }
 
         timerText.text = Mathf.CeilToInt(remaining).ToString();
-    }
-
-    public override void Show()
-    {
-        SetVisible(true);
-    }
-
-    public override void Hide()
-    {
-        SetVisible(false);
-    }
-
-    public void SetVisible(bool visible)
-    {
-        canvasGroup.alpha = visible == true ? 1f : 0f;
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable = false;
     }
 }

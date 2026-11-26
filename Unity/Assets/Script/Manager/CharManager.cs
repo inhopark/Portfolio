@@ -25,9 +25,6 @@ public class CharManager : MonoBehaviour
 
     public PlayerCharacter Player { get; private set; }
 
-    private Vector3 _playerSpawnPosition = Vector3.zero;
-    private Quaternion _playerSpawnRotation = Quaternion.identity;
-
     private readonly List<NPC> _npcList = new List<NPC>();
 
     public IReadOnlyList<NPC> NPCList
@@ -80,21 +77,6 @@ public class CharManager : MonoBehaviour
         Debug.Log($"## CharManager ## Initialize ## Player : {(Player != null ? Player.name : "None")} ## NPCCount : {_npcList.Count}");
     }
 
-    public void ResetPlayer()
-    {
-        if(Player == null)
-        {
-            Debug.LogError("## CharManager ## ResetPlayer ## Error : Player Is Null");
-            return;
-        }
-
-        WarpPlayerToSpawnPoint();
-        Player.SetPlayMode(PlayMode.Normal);
-        Player.ResetHP();
-
-        Debug.Log($"## CharManager ## ResetPlayer ## Position : {_playerSpawnPosition} ## HP : {Player.CurrentHP}");
-    }
-
     private void CreateCharRoot()
     {
         if(_charRoot != null)
@@ -115,10 +97,7 @@ public class CharManager : MonoBehaviour
             return;
         }
 
-        _playerSpawnPosition = entry.Position;
-        _playerSpawnRotation = Quaternion.Euler(entry.Rotation);
-
-        GameObject playerObject = Instantiate(entry.Prefab, _playerSpawnPosition, _playerSpawnRotation, _charRoot);
+        GameObject playerObject = Instantiate(entry.Prefab, entry.Position, Quaternion.Euler(entry.Rotation), _charRoot);
         Player = playerObject.GetComponent<PlayerCharacter>();
         if(Player == null)
         {
@@ -156,8 +135,6 @@ public class CharManager : MonoBehaviour
             Destroy(Player.gameObject);
         }
         Player = null;
-        _playerSpawnPosition = Vector3.zero;
-        _playerSpawnRotation = Quaternion.identity;
 
         foreach (NPC npc in _npcList)
         {
@@ -167,10 +144,5 @@ public class CharManager : MonoBehaviour
             }
         }
         _npcList.Clear();
-    }
-
-    private void WarpPlayerToSpawnPoint()
-    {
-        Player.WarpTo(_playerSpawnPosition, _playerSpawnRotation);
     }
 }// end class

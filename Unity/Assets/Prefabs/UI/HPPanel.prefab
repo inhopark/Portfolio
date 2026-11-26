@@ -105,7 +105,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MissionSystem.HPWidget
   hpBar: {fileID: 1415354683064437753}
   hpText: {fileID: 3198662828816138309}
-  canvasGroup: {fileID: 9116460862065626585}
+  _visibilityMode: 1
   barInterpSpeed: 2
 --- !u!1 &1272603413489209154
 GameObject:

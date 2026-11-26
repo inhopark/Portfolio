@@ -60,9 +60,14 @@ public class PlayerCharacter : MonoBehaviour
     private float _currentForwardOffset;
     private string _currentAnimationState;
 
+    private Vector3 _spawnPosition = Vector3.zero;
+    private Quaternion _spawnRotation = Quaternion.identity;
+
     private void Awake()
     {
         _controller = GetComponent<CharacterController>();
+        _spawnPosition = transform.position;
+        _spawnRotation = transform.rotation;
         CurrentHP = maxHP;
         _currentArmLength = normalArmLength;
         _currentPitch = normalPitch;
@@ -244,6 +249,15 @@ public class PlayerCharacter : MonoBehaviour
     {
         CurrentHP = maxHP;
         OnHPChanged?.Invoke(CurrentHP, maxHP);
+    }
+
+    public void ResetPlayer()
+    {
+        WarpTo(_spawnPosition, _spawnRotation);
+        SetPlayMode(PlayMode.Normal);
+        ResetHP();
+
+        Debug.Log($"## PlayerCharacter ## ResetPlayer ## Position : {_spawnPosition} ## HP : {CurrentHP}");
     }
 
     public void WarpTo(Vector3 position, Quaternion rotation)

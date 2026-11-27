@@ -68,7 +68,7 @@ private:
 	bool IsMissionRequest();
 
 	UFUNCTION()
-	void OnMissionStateChanged(EMissionState NewState);
+	void HandleMissionStateChanged(EMissionState NewState);
 
 	void SetUICursorMode(bool bShow);
 
@@ -78,7 +78,7 @@ private:
 
 	void SetDefenseHUDVisible(bool bVisible);
 
-	class AMissionSystemCharacter* GetMissionCharacter() const;
+	class AMissionSystemCharacter* GetPlayerCharacter() const;
 	class AMainPlayerController* GetMainPlayerController() const;
 
 };// end class

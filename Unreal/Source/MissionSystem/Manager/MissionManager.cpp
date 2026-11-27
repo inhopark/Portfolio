@@ -86,13 +86,13 @@ void UMissionManager::HandleMissionButtonAction(EMissionButtonAction Action)
 					CurrentMissionNPC->SetActorEnableCollision(false);
 				}
 
-				AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
-				if(MissionCharacter != nullptr)
+				AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter();
+				if(PlayerCharacter != nullptr)
 				{
-					MissionCharacter->SetPlayMode(ECharacterPlayMode::DefenseMode);
+					PlayerCharacter->SetPlayMode(ECharacterPlayMode::DefenseMode);
 				}
 
-				CurrentMission->AgreeMission(MissionCharacter);
+				CurrentMission->AgreeMission(PlayerCharacter);
 
 				SetDefenseHUDVisible(true);
 
@@ -160,7 +160,7 @@ void UMissionManager::RequestMission(EMissionUnique MissionUnique)
 		CurrentMission = MissionFactory->CreateMission(this, MissionUnique);
 		if(CurrentMission != nullptr)
 		{
-			CurrentMission->OnMissionStateChanged.AddDynamic(this, &UMissionManager::OnMissionStateChanged);
+			CurrentMission->OnMissionStateChanged.AddDynamic(this, &UMissionManager::HandleMissionStateChanged);
 
 			CurrentMission->Initialize();
 		}
@@ -176,7 +176,7 @@ bool UMissionManager::IsMissionRequest()
 	return CurrentMission == nullptr;
 }
 
-void UMissionManager::OnMissionStateChanged(EMissionState NewState)
+void UMissionManager::HandleMissionStateChanged(EMissionState NewState)
 {
 	switch (NewState)
 	{
@@ -245,15 +245,15 @@ void UMissionManager::ClearCurrentMission()
 {
 	if(CurrentMission != nullptr)
 	{
-		CurrentMission->OnMissionStateChanged.RemoveDynamic(this, &UMissionManager::OnMissionStateChanged);
+		CurrentMission->OnMissionStateChanged.RemoveDynamic(this, &UMissionManager::HandleMissionStateChanged);
 
 		CurrentMission = nullptr;
 	}
 
-	AMissionSystemCharacter* MissionCharacter = GetMissionCharacter();
-	if(MissionCharacter != nullptr)
+	AMissionSystemCharacter* PlayerCharacter = GetPlayerCharacter();
+	if(PlayerCharacter != nullptr)
 	{
-		MissionCharacter->ResetPlayer();
+		PlayerCharacter->ResetPlayer();
 	}
 
 	if(CurrentMissionNPC != nullptr)
@@ -275,7 +275,7 @@ void UMissionManager::SetDefenseHUDVisible(bool bVisible)
 	}
 }
 
-AMissionSystemCharacter* UMissionManager::GetMissionCharacter() const
+AMissionSystemCharacter* UMissionManager::GetPlayerCharacter() const
 {
 	AMainPlayerController* MainPlayerController = GetMainPlayerController();
 	if(MainPlayerController == nullptr)

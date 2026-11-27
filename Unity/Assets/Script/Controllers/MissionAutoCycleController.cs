@@ -8,14 +8,14 @@ public class MissionAutoCycleController
     private const float AutoApproachMoveSpeed = 6.5f;
     private const float AutoDodgeMoveSpeed = 5f;
     private const float DodgeSwitchDistance = 2.5f;
-    private const float NpcArriveDistance = 1.5f;
+    private const float NPCArriveDistance = 1.5f;
     private const float AutoAgreeDelay = 1.5f;
     private const float AutoConfirmDelay = 1.5f;
     private const float AutoCycleSurvivalDuration = 5f;
 
     private ICoroutineRunner _runner = null;
     private PlayerCharacter _player = null;
-    private NPC _targetNpc = null;
+    private NPC _targetNPC = null;
 
     private bool _isEnabled = false;
 
@@ -53,8 +53,8 @@ public class MissionAutoCycleController
             return;
         }
 
-        _targetNpc = FindNearestNpc();
-        if(_targetNpc == null)
+        _targetNPC = FindNearestNPC();
+        if(_targetNPC == null)
         {
             Debug.LogError("## MissionAutoCycleController ## StartAutoCycle ## Error : NPC Not Found In Scene");
             return;
@@ -62,16 +62,16 @@ public class MissionAutoCycleController
 
         SetAutoCycleEnabled(true);
         MissionManager.Instance.OnAnyMissionStateChanged += HandleMissionStateChanged;
-        StartApproachingTargetNpc();
+        StartApproachingTargetNPC();
     }
 
     private void StopAutoCycle()
     {
-        StopApproachingTargetNpc();
+        StopApproachingTargetNPC();
         StopDodging();
         StopActionDelay();
 
-        _targetNpc = null;
+        _targetNPC = null;
 
         if(_isEnabled == false)
         {
@@ -97,13 +97,13 @@ public class MissionAutoCycleController
         Debug.Log($"## MissionAutoCycleController ## SetAutoCycleEnabled ## IsEnabled : {isEnabled}");
     }
 
-    private void StartApproachingTargetNpc()
+    private void StartApproachingTargetNPC()
     {
-        StopApproachingTargetNpc();
-        _approachRoutine = _runner.StartCoroutine(ApproachTargetNpcRoutine());
+        StopApproachingTargetNPC();
+        _approachRoutine = _runner.StartCoroutine(ApproachTargetNPCRoutine());
     }
 
-    private void StopApproachingTargetNpc()
+    private void StopApproachingTargetNPC()
     {
         StopRoutine(ref _approachRoutine);
     }
@@ -130,11 +130,11 @@ public class MissionAutoCycleController
         StopRoutine(ref _actionDelayRoutine);
     }
 
-    private IEnumerator ApproachTargetNpcRoutine()
+    private IEnumerator ApproachTargetNPCRoutine()
     {
-        while (_targetNpc != null && Vector3.Distance(_player.transform.position, _targetNpc.transform.position) > NpcArriveDistance)
+        while (_targetNPC != null && Vector3.Distance(_player.transform.position, _targetNPC.transform.position) > NPCArriveDistance)
         {
-            Vector3 direction = _targetNpc.transform.position - _player.transform.position;
+            Vector3 direction = _targetNPC.transform.position - _player.transform.position;
             direction.y = 0f;
             if(direction.sqrMagnitude > 0.0001f)
             {
@@ -187,7 +187,7 @@ public class MissionAutoCycleController
         {
             case MissionState.Ready:
                 {
-                    StopApproachingTargetNpc();
+                    StopApproachingTargetNPC();
                     _player.AutoMove(Vector3.zero);
                     StartActionDelay(AutoAgreeDelay, TriggerAutoAgree);
                 }
@@ -226,7 +226,7 @@ public class MissionAutoCycleController
         StopAutoCycle();
     }
 
-    private NPC FindNearestNpc()
+    private NPC FindNearestNPC()
     {
         IReadOnlyList<NPC> npcs = CharManager.Instance.NPCList;
         NPC nearest = null;

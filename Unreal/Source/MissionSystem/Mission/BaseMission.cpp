@@ -7,10 +7,8 @@ UBaseMission::UBaseMission()
 
 void UBaseMission::Initialize()
 {
-	// 미션별 초기화
 	InitData();
 
-	// 미션 준비 상태로 변경.
 	SetState(EMissionState::Ready);
 }
 
@@ -38,7 +36,6 @@ void UBaseMission::AgreeMission(AMissionSystemCharacter* Player)
 {
 	MissionPlayer = Player;
 
-	// 미션 진행 중으로 변경.
 	SetState(EMissionState::InProgress);
 }
 

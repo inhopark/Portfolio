@@ -19,7 +19,6 @@ private:
 
 protected:
 
-	// AgreeMission()에서 저장됨. OnInProgress() 등 State 훅에서 사용 가능
 	TWeakObjectPtr<AMissionSystemCharacter> MissionPlayer;
 
 public:
@@ -31,13 +30,10 @@ public:
 
 	UBaseMission();
 
-	// 미션 생성 직후 외부(MissionManager)에서 호출. InitData()로 초기화를 끝낸 뒤 Ready 상태로 전이
-	// virtual이 아닌 이유: 자식이 순서를 바꿔 초기화 전에 Ready가 브로드캐스트되는 일을 막기 위함
 	void Initialize();
 
 protected:
 
-	// 자식 미션별 데이터/리소스 초기화. 자식은 Super::InitData() 호출 후 자기 초기화를 추가
 	virtual void InitData();
 
 	virtual void OnReady();
@@ -60,10 +56,8 @@ public:
 
 	FORCEINLINE EMissionState GetMissionState() const { return MissionState; }
 
-	// 이 미션이 디펜스 미니게임을 진행 중이라면 남은 시간(초)을 반환. 없으면 음수(기본 구현)
 	virtual float GetMinigameRemainingTime() const { return -1.0f; }
 
-	// 이 미션이 디펜스 미니게임을 진행 중이라면 총 제한시간(초)을 반환. 없으면 0(기본 구현)
 	virtual float GetMinigameTotalDuration() const { return 0.0f; }
 
 protected:

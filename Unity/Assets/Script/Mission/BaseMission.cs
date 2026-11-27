@@ -1,11 +1,11 @@
 using System;
+using UnityEngine;
 
-/// State machine: Ready -> InProgress -> Succeeded/Failed. All transitions funnel through SetState.
 public abstract class BaseMission
 {
     public event Action<MissionState> OnMissionStateChanged;
 
-    public MissionState State { get; private set; } = MissionState.Ready;
+    public MissionState State { get; private set; } = MissionState.None;
     protected PlayerCharacter MissionPlayer { get; private set; }
 
     public void Initialize()
@@ -13,6 +13,12 @@ public abstract class BaseMission
         InitData();
         SetState(MissionState.Ready);
     }
+
+    protected virtual void InitData() { }
+    protected virtual void OnReady() { }
+    protected virtual void OnInProgress() { }
+    protected virtual void OnSucceeded() { }
+    protected virtual void OnFailed() { }
 
     public virtual void AgreeMission(PlayerCharacter player)
     {
@@ -44,40 +50,44 @@ public abstract class BaseMission
         return 0f;
     }
 
-    private void SetState(MissionState newState)
+    private bool SetState(MissionState newState)
     {
+        if(State == newState)
+        {
+            Debug.Log($"## BaseMission ## SetState ## Warning : Already In State ## Mission : {GetType().Name} ## State : {newState}");
+            return false;
+        }
+
         State = newState;
+
+        Debug.Log($"## BaseMission ## SetState ## Mission : {GetType().Name} ## State : {State}");
 
         switch (newState)
         {
             case MissionState.Ready:
-            {
-                OnReady();
+                {
+                    OnReady();
+                }
                 break;
-            }
             case MissionState.InProgress:
-            {
-                OnInProgress();
+                {
+                    OnInProgress();
+                }
                 break;
-            }
             case MissionState.Succeeded:
-            {
-                OnSucceeded();
+                {
+                    OnSucceeded();
+                }
                 break;
-            }
             case MissionState.Failed:
-            {
-                OnFailed();
+                {
+                    OnFailed();
+                }
                 break;
-            }
         }
 
         OnMissionStateChanged?.Invoke(newState);
-    }
 
-    protected virtual void InitData() { }
-    protected virtual void OnReady() { }
-    protected virtual void OnInProgress() { }
-    protected virtual void OnSucceeded() { }
-    protected virtual void OnFailed() { }
-}
+        return true;
+    }
+}// end class

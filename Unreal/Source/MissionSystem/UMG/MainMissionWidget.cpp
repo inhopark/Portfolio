@@ -37,13 +37,10 @@ void UMainMissionWidget::SetWidgetState(EMissionState MissionState)
 			break;
 		default:
 			{
-				// 미션 성공/실패 시에는 결과 전용 위젯(WBP_MainMissionResult)이 대신 표시되며,
-				// 이 대화창 자체는 MissionManager에 의해 숨겨지므로 별도 처리가 필요 없음.
 			}
 			break;
 	}
 
-	// 버튼 보여질지 선택.
 	const bool bShowButtons = MissionState == EMissionState::Ready || MissionState == EMissionState::InProgress;
 	const ESlateVisibility ButtonVisibility = bShowButtons == true ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
 	if(LeftButton != nullptr)

@@ -28,7 +28,6 @@ void ANPC::OnUserCheckOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
 		return;
 	}
 
-	// 미션 요청 UI 띄우는 로직.
 	UGameInstance* GameInstance = GetGameInstance();
 	if(GameInstance == nullptr)
 	{
@@ -50,7 +49,6 @@ void ANPC::OnUserCheckOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActo
 		return;
 	}
 
-	// 미션 요청 UI 제거하는 로직.
 	UGameInstance* GameInstance = GetGameInstance();
 	if(GameInstance == nullptr)
 	{

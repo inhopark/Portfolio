@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// The one intentional poller (matches UE5's NativeTick exception) - a timer inherently needs
-/// continuous updates, so it reads MissionManager every frame instead of subscribing to an event.
 public class MissionTimerWidget : BaseWidget
 {
     public Slider timerBar;
@@ -24,4 +22,4 @@ public class MissionTimerWidget : BaseWidget
 
         timerText.text = Mathf.CeilToInt(remaining).ToString();
     }
-}
+}// end class

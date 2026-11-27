@@ -58,4 +58,4 @@ public class NPC : MonoBehaviour
             c.enabled = false;
         }
     }
-}
+}// end class

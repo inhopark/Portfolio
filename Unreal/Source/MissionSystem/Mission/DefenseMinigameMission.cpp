@@ -6,7 +6,6 @@ void UDefenseMinigameMission::InitData()
 {
 	Super::InitData();
 
-	// 미니게임 컨트롤러 생성 및 생존 성공 이벤트 바인딩
 	DefenseMinigame = NewObject<UDefenseMinigameController>(this);
 	DefenseMinigame->OnSurvived.AddDynamic(this, &UDefenseMinigameMission::HandleMinigameSurvived);
 }

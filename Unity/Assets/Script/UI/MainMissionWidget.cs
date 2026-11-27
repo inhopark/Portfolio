@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// Pure view: zero references to Mission/Manager types, only fires events upward.
 public class MainMissionWidget : BaseWidget
 {
     public Text titleText;
@@ -21,27 +20,25 @@ public class MainMissionWidget : BaseWidget
 
     public void SetWidgetState(MissionState state)
     {
-        // Buttons stay visible-but-non-functional during InProgress (relabeled Success/Fail) -
-        // an intentional 1:1 port of the UE5 reference's leftover dead-button behavior.
         leftButton.gameObject.SetActive(true);
         rightButton.gameObject.SetActive(true);
 
         switch (state)
         {
             case MissionState.Ready:
-            {
-                titleText.text = MissionText.WaitForMission;
-                leftButtonText.text = MissionText.AgreeButton;
-                rightButtonText.text = MissionText.DisagreeButton;
+                {
+                    titleText.text = MissionText.WaitForMission;
+                    leftButtonText.text = MissionText.AgreeButton;
+                    rightButtonText.text = MissionText.DisagreeButton;
+                }
                 break;
-            }
             case MissionState.InProgress:
-            {
-                titleText.text = MissionText.MissionInProgress;
-                leftButtonText.text = MissionText.SuccessButton;
-                rightButtonText.text = MissionText.FailButton;
+                {
+                    titleText.text = MissionText.MissionInProgress;
+                    leftButtonText.text = MissionText.SuccessButton;
+                    rightButtonText.text = MissionText.FailButton;
+                }
                 break;
-            }
         }
     }
-}
+}// end class

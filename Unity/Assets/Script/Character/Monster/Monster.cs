@@ -15,8 +15,6 @@ public class Monster : MonoBehaviour
     private float _distanceTraveled;
     private bool _isActive;
 
-    /// No custom mesh assigned - falls back to a scaled sphere primitive, matching the UE5
-    /// reference's own no-mesh-assigned fallback for AMonster.
     public static GameObject CreateDefault()
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -90,4 +88,4 @@ public class Monster : MonoBehaviour
         player.ApplyDamage(DamageAmount);
         Deactivate();
     }
-}
+}// end class

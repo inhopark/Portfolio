@@ -1,6 +1,4 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -18,8 +16,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 UENUM(BlueprintType)
 enum class ECharacterPlayMode : uint8
 {
-	Normal,        // 일반 3인칭 자유 이동 모드
-	DefenseMode    // 쿼터뷰 디펜스 미니게임 모드
+	Normal,
+	DefenseMode
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPChanged, float, CurrentHP, float, MaxHP);
@@ -31,27 +29,21 @@ class AMissionSystemCharacter : public ACharacter
 
 private:
 
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom = nullptr;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera = nullptr;
 
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext = nullptr;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction = nullptr;
 
-	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction = nullptr;
 
-	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction = nullptr;
 
@@ -66,11 +58,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera|Defense")
 	float DefenseCameraForwardOffset = 450.0f;
 
-	// 일반 3인칭 모드 좌우/전후 이동 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayMode")
 	float NormalModeMoveSpeed = 500.0f;
 
-	// 디펜스 모드(쿼터뷰) 좌우 이동 속도 — 몬스터를 피해야 하므로 일반 모드보다 빠르게 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayMode")
 	float DefenseModeMoveSpeed = 850.0f;
 
@@ -99,18 +89,14 @@ protected:
 
 public:
 
-	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	void SetPlayMode(ECharacterPlayMode NewMode);
 	FORCEINLINE ECharacterPlayMode GetPlayMode() const { return CurrentPlayMode; }
 
-	// DamageAmount만큼 HP를 깎고 OnHPChanged를 브로드캐스트. HP가 0이 되면 MissionManager에 알려 미션을 초기화시킴
 	void ApplyDamage(float DamageAmount);
 
-	// HP를 MaxHP로 회복시키고 OnHPChanged를 브로드캐스트
 	void ResetHP();
 
 	void ResetPlayer();
@@ -120,10 +106,8 @@ public:
 
 protected:
 
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
 private:

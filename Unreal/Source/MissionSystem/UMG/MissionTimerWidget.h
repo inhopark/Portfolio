@@ -15,10 +15,10 @@ class MISSIONSYSTEM_API UMissionTimerWidget : public UBaseWidget
 protected:
 
 	UPROPERTY(meta = (BindWidget))
-	class UProgressBar* TimerBar = nullptr;   // 남은 시간 게이지 (선택, 없어도 동작)
+	class UProgressBar* TimerBar = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* TimerText = nullptr;    // 남은 초 텍스트
+	class UTextBlock* TimerText = nullptr;
 
 public:
 
@@ -28,7 +28,6 @@ public:
 
 public:
 
-	// RemainingTime/TotalDuration(초)로 게이지, 텍스트 갱신
 	void SetRemainingTime(float RemainingTime, float TotalDuration);
 
 };// end class

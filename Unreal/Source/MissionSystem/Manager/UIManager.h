@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/LocalPlayerSubsystem.h"
+#include "Subsystems/GameInstanceSubsystem.h"
 #include "Define/UIDefine.h"
 #include "UIManager.generated.h"
 
 class UBaseWidget;
 
 UCLASS()
-class MISSIONSYSTEM_API UUIManager : public ULocalPlayerSubsystem
+class MISSIONSYSTEM_API UUIManager : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 

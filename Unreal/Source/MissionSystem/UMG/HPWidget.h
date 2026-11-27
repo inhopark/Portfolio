@@ -16,12 +16,11 @@ class MISSIONSYSTEM_API UHPWidget : public UBaseWidget
 protected:
 
 	UPROPERTY(meta = (BindWidget))
-	class UProgressBar* HPBar = nullptr;   // HP 게이지
+	class UProgressBar* HPBar = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* HPText = nullptr;    // "현재HP / 최대HP" 텍스트
+	class UTextBlock* HPText = nullptr;
 
-	// 게이지가 목표치까지 보간되는 속도 (클수록 빠르게 따라감)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
 	float BarInterpSpeed = 2.0f;
 

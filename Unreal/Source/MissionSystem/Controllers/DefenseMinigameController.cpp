@@ -2,6 +2,19 @@
 #include "Spawner/MonsterSpawner.h"
 #include "Character/User/MissionSystemCharacter.h"
 
+void UDefenseMinigameController::SetSurvivalDurationOverride(float NewDuration)
+{
+	if(NewDuration <= 0.0f)
+	{
+		UE_LOG(LogTemp, Log, TEXT("## DefenseMinigameController ## SetSurvivalDurationOverride ## Warning : Invalid Duration ## NewDuration : %f"), NewDuration);
+		return;
+	}
+
+	SurvivalDuration = NewDuration;
+
+	UE_LOG(LogTemp, Log, TEXT("## DefenseMinigameController ## SetSurvivalDurationOverride ## SurvivalDuration : %f"), SurvivalDuration);
+}
+
 void UDefenseMinigameController::Start(AMissionSystemCharacter* Player)
 {
 	if(Player == nullptr)
@@ -20,19 +33,6 @@ void UDefenseMinigameController::Start(AMissionSystemCharacter* Player)
 	{
 		World->GetTimerManager().SetTimer(SurvivalTimerHandle, this, &UDefenseMinigameController::HandleTimerExpired, SurvivalDuration, false);
 	}
-}
-
-void UDefenseMinigameController::SetSurvivalDurationOverride(float NewDuration)
-{
-	if(NewDuration <= 0.0f)
-	{
-		UE_LOG(LogTemp, Log, TEXT("## DefenseMinigameController ## SetSurvivalDurationOverride ## Warning : Invalid Duration ## NewDuration : %f"), NewDuration);
-		return;
-	}
-
-	SurvivalDuration = NewDuration;
-
-	UE_LOG(LogTemp, Log, TEXT("## DefenseMinigameController ## SetSurvivalDurationOverride ## SurvivalDuration : %f"), SurvivalDuration);
 }
 
 void UDefenseMinigameController::Stop()

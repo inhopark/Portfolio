@@ -6,6 +6,7 @@ public enum MissionUnique
 
 public enum MissionState
 {
+    None,
     Ready,
     InProgress,
     Succeeded,
@@ -29,4 +30,4 @@ public static class MissionText
     public const string AgreeButton = "Agree";
     public const string DisagreeButton = "Disagree";
     public const string ConfirmButton = "Confirm";
-}
+}// end class

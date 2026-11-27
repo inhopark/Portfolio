@@ -22,6 +22,7 @@
 - 3.1 커밋과 푸시는 사용자가 요청할 때만 한다.
   - "커밋해줘"는 커밋 후 푸시까지 하라는 뜻으로 본다. 커밋만 원하면 사용자가 따로 말한다.
 - 3.2 빌드 산출물과 생성 파일(`.sln`, `.vcxproj`, `Binaries/`, `Intermediate/`)은 커밋하지 않는다.
+- 3.3 언리얼 C++ 변경을 커밋할 때는 먼저 4.3의 자동 테스트를 통과시킨다.
 
 ## 4. 언리얼: 코드 수정 후 검증
 
@@ -32,7 +33,7 @@
 ```
 
 - 4.2 여러 파일이나 include를 바꿨으면 `-DisableUnity` 빌드도 통과시킨다. 일반 빌드는 include 누락을 가릴 수 있다.
-- 4.3 게임 흐름에 영향이 있으면 자동 테스트 명령(MissionSystem은 `ToggleAutoCycleMode`)을 실행하고 로그로 검증한 뒤 종료한다. 로그만 봤으면 화면은 확인 안 했다고 보고한다.
+- 4.3 자동 테스트 명령(MissionSystem은 `ToggleAutoCycleMode`)은 코드를 고칠 때마다 실행하지 않고, 커밋 요청을 받았을 때 커밋 전에 실행한다. 로그로 검증해 성공하면 커밋하고, 실패하면 커밋하지 않고 결과를 보고한다. 로그만 봤으면 화면은 확인 안 했다고 보고한다.
 
 ```
 "<엔진 경로>\Engine\Binaries\Win64\UnrealEditor.exe" "<.uproject 절대 경로>" -game -windowed -ResX=960 -ResY=540 -nosound -unattended -ExecCmds="<자동 테스트 명령>" -abslog="<로그 파일 경로>"

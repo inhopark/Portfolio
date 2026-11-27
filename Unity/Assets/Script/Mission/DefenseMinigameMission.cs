@@ -1,14 +1,8 @@
 using UnityEngine;
 
-/// Template Method: owns and drives a DefenseMinigameController through the mission's own state hooks.
 public abstract class DefenseMinigameMission : BaseMission
 {
     private DefenseMinigameController _defenseMinigame;
-
-    public DefenseMinigameController GetDefenseMinigameController()
-    {
-        return _defenseMinigame;
-    }
 
     protected override void InitData()
     {
@@ -47,11 +41,6 @@ public abstract class DefenseMinigameMission : BaseMission
         }
     }
 
-    private void HandleMinigameSurvived()
-    {
-        SuccessMission();
-    }
-
     public override float GetMinigameRemainingTime()
     {
         if(_defenseMinigame == null)
@@ -71,4 +60,14 @@ public abstract class DefenseMinigameMission : BaseMission
 
         return _defenseMinigame.SurvivalDuration;
     }
-}
+
+    public DefenseMinigameController GetDefenseMinigameController()
+    {
+        return _defenseMinigame;
+    }
+
+    private void HandleMinigameSurvived()
+    {
+        SuccessMission();
+    }
+}// end class

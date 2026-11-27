@@ -1,6 +1,5 @@
 using UnityEngine;
 
-/// No unique content vs Chapter1 by design (matches the UE5 reference exactly) - log tag only.
 public class MissionAct1Chapter2 : DefenseMinigameMission
 {
     protected override void OnReady()
@@ -26,4 +25,4 @@ public class MissionAct1Chapter2 : DefenseMinigameMission
         base.OnFailed();
         Debug.Log("## MissionAct1Chapter2 ## Failed state entered");
     }
-}
+}// end class

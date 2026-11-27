@@ -28,8 +28,6 @@ void AMonsterSpawner::StopSpawning()
 		World->GetTimerManager().ClearTimer(SpawnTimerHandle);
 	}
 
-	// 미션 종료 시 화면에 남아있는 몬스터를 전부 풀로 반환.
-	// Deactivate()가 HandleMonsterDeactivated를 통해 ActiveMonsters를 수정하므로 복사본을 순회함
 	TArray<AMonster*> MonstersToDeactivate = ActiveMonsters;
 	for(AMonster* Monster : MonstersToDeactivate)
 	{
@@ -49,7 +47,6 @@ void AMonsterSpawner::SpawnMonster()
 		return;
 	}
 
-	// 난이도를 위해 한 번에 여러 마리를 랜덤으로 동시에 등장시킴
 	const int32 SpawnCount = FMath::RandRange(MinSpawnCount, MaxSpawnCount);
 	for(int32 Index = 0; Index < SpawnCount; ++Index)
 	{
@@ -75,8 +72,6 @@ void AMonsterSpawner::SpawnOneMonster()
 
 AMonster* AMonsterSpawner::AcquireMonster()
 {
-	// 오브젝트 풀 패턴: 대기 중인 몬스터가 있으면 재사용, 없을 때만 새로 생성해
-	// 디펜스 웨이브 내내 반복되는 Spawn/Destroy 비용을 없앰
 	if(PooledMonsters.Num() > 0)
 	{
 		return PooledMonsters.Pop();

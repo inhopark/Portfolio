@@ -2,48 +2,49 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-/// Owned by the mission (not the manager) - which missions use the minigame is the mission's decision.
 public class DefenseMinigameController
 {
     public event Action OnSurvived;
 
     public float SurvivalDuration { get; private set; } = 30f;
 
-    private MonsterSpawner _spawner;
-    private ICoroutineRunner _runner;
-    private Coroutine _survivalRoutine;
-    private float _remainingTime;
-    private bool _running;
+    private MonsterSpawner _spawner = null;
+    private ICoroutineRunner _runner = null;
+    private Coroutine _survivalRoutine = null;
+    private float _remainingTime = 0f;
+    private bool _isRunning = false;
 
-    /// Only takes effect if called before Start().
     public void SetSurvivalDurationOverride(float seconds)
     {
         SurvivalDuration = seconds;
+
+        Debug.Log($"## DefenseMinigameController ## SetSurvivalDurationOverride ## SurvivalDuration : {SurvivalDuration}");
     }
 
     public void Start(PlayerCharacter player, ICoroutineRunner runner)
     {
         _runner = runner;
         _remainingTime = SurvivalDuration;
-        _running = true;
+        _isRunning = true;
 
         _spawner = CreateMonsterSpawner();
         _spawner.StartSpawning(player);
 
-        _survivalRoutine = runner.StartCoroutine(SurvivalTimerRoutine());
+        IEnumerator survivalTimerRoutine = SurvivalTimerRoutine();
+        _survivalRoutine = runner.StartCoroutine(survivalTimerRoutine);
     }
 
     public void Stop()
     {
-        _running = false;
+        _isRunning = false;
 
-        if (_survivalRoutine != null && _runner != null)
+        if(_survivalRoutine != null && _runner != null)
         {
             _runner.StopCoroutine(_survivalRoutine);
             _survivalRoutine = null;
         }
 
-        if (_spawner != null)
+        if(_spawner != null)
         {
             _spawner.StopSpawning();
             UnityEngine.Object.Destroy(_spawner.gameObject);
@@ -53,13 +54,13 @@ public class DefenseMinigameController
 
     public float GetRemainingTime()
     {
-        return _running == true ? _remainingTime : -1f;
+        return _isRunning == true ? _remainingTime : -1f;
     }
 
     private static MonsterSpawner CreateMonsterSpawner()
     {
-        GameObject go = new GameObject("MonsterSpawner");
-        return go.AddComponent<MonsterSpawner>();
+        GameObject monsterSpawnerObject = new GameObject("MonsterSpawner");
+        return monsterSpawnerObject.AddComponent<MonsterSpawner>();
     }
 
     private IEnumerator SurvivalTimerRoutine()
@@ -71,7 +72,7 @@ public class DefenseMinigameController
         }
 
         _remainingTime = 0f;
-        _running = false;
+        _isRunning = false;
         OnSurvived?.Invoke();
     }
-}
+}// end class

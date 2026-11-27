@@ -1,4 +1,4 @@
-#include "MainPlayerController.h"
+﻿#include "MainPlayerController.h"
 #include "Manager/MissionManager.h"
 #include "Manager/UIManager.h"
 #include "Controllers/MissionAutoCycleController.h"
@@ -6,37 +6,31 @@
 #include "UMG/MissionResultWidget.h"
 #include "UMG/HPWidget.h"
 #include "UMG/MissionTimerWidget.h"
-#include "Engine/LocalPlayer.h"
 
 void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UUIManager* UIManager = GetUIManager();
-	if(UIManager == nullptr)
+	InitManager();
+
+	AutoCycleController = NewObject<UMissionAutoCycleController>(this);
+	AutoCycleController->Initialize();
+}
+
+void AMainPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if(AutoCycleController != nullptr)
 	{
-		return;
+		AutoCycleController->Deinitialize();
+		AutoCycleController = nullptr;
 	}
 
-	UIManager->InitializeUI(this);
-
-	UGameInstance* GameInstance = GetGameInstance();
-	if(GameInstance == nullptr)
-	{
-		return;
-	}
-
-	UMissionManager* MissionManager = GameInstance->GetSubsystem<UMissionManager>();
-	if(MissionManager != nullptr)
-	{
-		MissionManager->RegisterMainMissionWidget(UIManager->GetUI<UMainMissionWidget>(EUIType::MainMission));
-		MissionManager->RegisterMissionResultWidgets(UIManager->GetUI<UMissionResultWidget>(EUIType::MissionResult));
-	}
+	Super::EndPlay(EndPlayReason);
 }
 
 void AMainPlayerController::SetDefenseHUDVisible(bool bVisible)
 {
-	UUIManager* UIManager = GetUIManager();
+	UUIManager* UIManager = GetSubsystem<UUIManager>();
 	if(UIManager == nullptr)
 	{
 		return;
@@ -65,27 +59,32 @@ void AMainPlayerController::SetDefenseHUDVisible(bool bVisible)
 
 void AMainPlayerController::ToggleAutoCycleMode()
 {
-	UGameInstance* GameInstance = GetGameInstance();
-	if(GameInstance == nullptr)
+	if(AutoCycleController == nullptr)
 	{
+		UE_LOG(LogTemp, Error, TEXT("## MainPlayerController ## ToggleAutoCycleMode ## Error : AutoCycleController Is Null"));
 		return;
 	}
 
-	UMissionAutoCycleController* AutoCycleController = GameInstance->GetSubsystem<UMissionAutoCycleController>();
-	if(AutoCycleController != nullptr)
-	{
-		AutoCycleController->ToggleAutoCycleMode();
-	}
+	AutoCycleController->ToggleAutoCycleMode();
 }
 
-UUIManager* AMainPlayerController::GetUIManager() const
+void AMainPlayerController::InitManager()
 {
-	ULocalPlayer* LocalPlayer = GetLocalPlayer();
-	if(LocalPlayer == nullptr)
+	UMainMissionWidget* MainMissionWidget = nullptr;
+	UMissionResultWidget* MissionResultWidget = nullptr;
+
+	UUIManager* UIManager = GetSubsystem<UUIManager>();
+	if(UIManager != nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("## MainPlayerController ## GetUIManager ## Error : LocalPlayer Is Null"));
-		return nullptr;
+		UIManager->InitializeUI(this);
+		MainMissionWidget = UIManager->GetUI<UMainMissionWidget>(EUIType::MainMission);
+		MissionResultWidget = UIManager->GetUI<UMissionResultWidget>(EUIType::MissionResult);
 	}
 
-	return LocalPlayer->GetSubsystem<UUIManager>();
+	UMissionManager* MissionManager = GetSubsystem<UMissionManager>();
+	if(MissionManager != nullptr)
+	{
+		MissionManager->RegisterMainMissionWidget(MainMissionWidget);
+		MissionManager->RegisterMissionResultWidget(MissionResultWidget);
+	}
 }

@@ -5,8 +5,6 @@
 
 UHPWidget::UHPWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	// 버튼이 없는 순수 표시용 위젯들이므로 HitTestInvisible로 노출해
-	// 다른 위젯(미션 결과창 등)의 클릭을 가로채지 않도록 함
 	ShowVisibility = ESlateVisibility::HitTestInvisible;
 }
 
@@ -14,7 +12,6 @@ void UHPWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// 위젯이 새로 생성된 시점엔 보간 없이 바로 현재 값으로 표시
 	DisplayedPercent = TargetPercent;
 	if(HPBar != nullptr)
 	{
@@ -56,7 +53,6 @@ void UHPWidget::OnHide()
 
 void UHPWidget::SetHP(float CurrentHP, float MaxHP)
 {
-	// 게이지는 목표치만 갱신 -> NativeTick에서 서서히 보간
 	TargetPercent = MaxHP > 0.0f ? CurrentHP / MaxHP : 0.0f;
 
 	if(HPText != nullptr)

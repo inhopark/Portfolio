@@ -7,16 +7,57 @@
 #include "Character/User/MissionSystemCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/GameInstance.h"
+#include "Engine/World.h"
+#include "TimerManager.h"
 
-void UMissionAutoCycleController::Initialize(FSubsystemCollectionBase& Collection)
+void UMissionAutoCycleController::Initialize()
 {
-	Super::Initialize(Collection);
+	UMissionManager* MissionManager = GetMissionManager();
+	if(MissionManager == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("## MissionAutoCycleController ## Initialize ## Error : MissionManager Not Found"));
+		return;
+	}
+
+	MissionManager->OnAnyMissionStateChanged.AddUniqueDynamic(this, &UMissionAutoCycleController::HandleMissionStateChanged);
+}
+
+void UMissionAutoCycleController::Deinitialize()
+{
+	StopApproachingTargetNPC();
+	StopDodging();
+
+	UWorld* World = GetWorld();
+	if(World != nullptr)
+	{
+		World->GetTimerManager().ClearTimer(ActionDelayTimerHandle);
+	}
 
 	UMissionManager* MissionManager = GetMissionManager();
 	if(MissionManager != nullptr)
 	{
-		MissionManager->OnAnyMissionStateChanged.AddDynamic(this, &UMissionAutoCycleController::HandleMissionStateChanged);
+		MissionManager->OnAnyMissionStateChanged.RemoveDynamic(this, &UMissionAutoCycleController::HandleMissionStateChanged);
 	}
+
+	TargetNPC = nullptr;
+	bIsEnabled = false;
+}
+
+UWorld* UMissionAutoCycleController::GetWorld() const
+{
+	if(HasAnyFlags(RF_ClassDefaultObject) == true)
+	{
+		return nullptr;
+	}
+
+	UObject* Outer = GetOuter();
+	if(Outer == nullptr)
+	{
+		return nullptr;
+	}
+
+	return Outer->GetWorld();
 }
 
 void UMissionAutoCycleController::Tick(float DeltaTime)
@@ -73,9 +114,6 @@ void UMissionAutoCycleController::StartApproachingTargetNPC()
 		return;
 	}
 
-	// 데모 진행 속도를 위해 접근 중에는 일반 걷기 속도보다 빠르게 이동시킴.
-	// Agree 처리 시 SetPlayMode(DefenseMode)가, 미션 종료 시 SetPlayMode(Normal)이
-	// MaxWalkSpeed를 각 모드 값으로 다시 덮어쓰므로 별도로 복원할 필요는 없음
 	UCharacterMovementComponent* MovementComponent = PlayerCharacter->GetCharacterMovement();
 	if(MovementComponent != nullptr)
 	{
@@ -101,8 +139,6 @@ void UMissionAutoCycleController::AdvanceTowardTargetNPC()
 
 	const FVector Direction = (TargetNPC->GetActorLocation() - PlayerCharacter->GetActorLocation()).GetSafeNormal2D();
 
-	// bForce=true: 미션 UI가 열려있는 동안(SetUICursorMode -> SetIgnoreMoveInput)에는 사람의 이동 입력을
-	// 막는 게 맞지만, 자동 사이클은 그 UI 규칙과 무관하게 항상 이동할 수 있어야 함
 	PlayerCharacter->AddMovementInput(Direction, 1.0f, true);
 }
 
@@ -132,8 +168,6 @@ void UMissionAutoCycleController::AdvanceDodgeMovement()
 		return;
 	}
 
-	// 디펜스 모드는 월드 Y축(오른쪽)만 좌우 이동으로 취급함(AMissionSystemCharacter::Move() 참고).
-	// 시간이 아니라 현재 방향으로 실제 이동한 거리가 DodgeSwitchDistance에 도달하면 방향 전환
 	const float TraveledDistance = FMath::Abs(PlayerCharacter->GetActorLocation().Y - DodgeLegStartLocation.Y);
 	if(TraveledDistance >= DodgeSwitchDistance)
 	{
@@ -164,14 +198,12 @@ void UMissionAutoCycleController::HandleMissionStateChanged(EMissionState NewSta
 	{
 		case EMissionState::Ready:
 			{
-				// 오버랩으로 미션창이 떴다는 뜻이므로 더 이상 이동할 필요 없음
 				StopApproachingTargetNPC();
 				World->GetTimerManager().SetTimer(ActionDelayTimerHandle, this, &UMissionAutoCycleController::TriggerAutoAgree, AutoAgreeDelay, false);
 			}
 			break;
 		case EMissionState::InProgress:
 			{
-				// 디펜스 미니게임 시작 -> 좌우 회피 이동 시작
 				StartDodging();
 			}
 			break;
@@ -197,7 +229,6 @@ void UMissionAutoCycleController::TriggerAutoAgree()
 		return;
 	}
 
-	// Start() 호출(OnInProgress) 전에 생존 시간을 미리 단축 설정해둠
 	UDefenseMinigameMission* DefenseMission = Cast<UDefenseMinigameMission>(MissionManager->GetCurrentMission());
 	if(DefenseMission != nullptr && DefenseMission->GetDefenseMinigameController() != nullptr)
 	{
@@ -217,7 +248,6 @@ void UMissionAutoCycleController::TriggerAutoConfirm()
 
 	TargetNPC = nullptr;
 
-	// 한 사이클(NPC 접근 -> Agree -> 디펜스 -> Confirm)만 돌고 자동으로 꺼짐
 	bIsEnabled = false;
 
 	UE_LOG(LogTemp, Log, TEXT("## MissionAutoCycleController ## TriggerAutoConfirm ## AutoCycleMode : OFF"));
@@ -225,13 +255,13 @@ void UMissionAutoCycleController::TriggerAutoConfirm()
 
 UMissionManager* UMissionAutoCycleController::GetMissionManager() const
 {
-	UGameInstance* GameInstance = GetGameInstance();
-	if(GameInstance == nullptr)
+	UWorld* World = GetWorld();
+	if(World == nullptr)
 	{
 		return nullptr;
 	}
 
-	return GameInstance->GetSubsystem<UMissionManager>();
+	return UGameInstance::GetSubsystem<UMissionManager>(World->GetGameInstance());
 }
 
 AMissionSystemCharacter* UMissionAutoCycleController::GetPlayerCharacter() const

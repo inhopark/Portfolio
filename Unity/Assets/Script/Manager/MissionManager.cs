@@ -1,9 +1,6 @@
 using System;
 using UnityEngine;
 
-/// Facade/Mediator: the single hub NPCs and widgets talk to. Widgets and missions never
-/// reference each other directly - command flow goes down (this calls widget/mission methods),
-/// event flow goes up (mission/widget events, consumed here).
 public class MissionManager : MonoBehaviour, ICoroutineRunner
 {
     private static MissionManager _instance = null;
@@ -104,11 +101,6 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
         _missionResultWidget.OnConfirmed += HandleMissionResultConfirmed;
     }
 
-    public bool IsMissionRequest()
-    {
-        return CurrentMission == null;
-    }
-
     public void ShowMainMissionWidget(MissionUnique missionUnique, NPC npc)
     {
         if(CurrentMission != null)
@@ -187,18 +179,6 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
         ClearCurrentMission();
     }
 
-    public void SetUICursorMode(bool uiMode)
-    {
-        Cursor.lockState = uiMode == true ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = uiMode;
-
-        PlayerCharacter player = GetPlayerCharacter();
-        if(player != null)
-        {
-            player.SetMovementLocked(uiMode);
-        }
-    }
-
     public float GetMissionRemainingTime()
     {
         if(CurrentMission == null)
@@ -221,19 +201,22 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
 
     private void RequestMission(MissionUnique missionUnique)
     {
-        if(CurrentMission != null)
+        if(IsMissionRequest() == false)
         {
             return;
         }
 
         CurrentMission = _missionFactory.CreateMission(missionUnique);
-        if(CurrentMission == null)
+        if(CurrentMission != null)
         {
-            return;
+            CurrentMission.OnMissionStateChanged += HandleMissionStateChanged;
+            CurrentMission.Initialize();
         }
+    }
 
-        CurrentMission.OnMissionStateChanged += HandleMissionStateChanged;
-        CurrentMission.Initialize();
+    private bool IsMissionRequest()
+    {
+        return CurrentMission == null;
     }
 
     private void HandleMissionStateChanged(MissionState newState)
@@ -249,6 +232,18 @@ public class MissionManager : MonoBehaviour, ICoroutineRunner
         }
 
         OnAnyMissionStateChanged?.Invoke(newState);
+    }
+
+    private void SetUICursorMode(bool uiMode)
+    {
+        Cursor.lockState = uiMode == true ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = uiMode;
+
+        PlayerCharacter player = GetPlayerCharacter();
+        if(player != null)
+        {
+            player.SetMovementLocked(uiMode);
+        }
     }
 
     private void ShowMissionResultWidget(MissionState resultState)

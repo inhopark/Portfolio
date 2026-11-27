@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// Pure display: subscribes to the player's OnHPChanged event, smooths the bar toward the target.
 public class HPWidget : BaseWidget
 {
     public Slider hpBar;
@@ -12,12 +11,6 @@ public class HPWidget : BaseWidget
     private float _targetPercent = 1f;
 
     private PlayerCharacter _boundPlayer = null;
-
-    public void SetHP(float current, float max)
-    {
-        _targetPercent = max > 0f ? current / max : 0f;
-        hpText.text = $"{Mathf.RoundToInt(current)} / {Mathf.RoundToInt(max)}";
-    }
 
     private void Update()
     {
@@ -39,6 +32,12 @@ public class HPWidget : BaseWidget
     {
         base.OnHide();
         UnbindPlayer();
+    }
+
+    public void SetHP(float current, float max)
+    {
+        _targetPercent = max > 0f ? current / max : 0f;
+        hpText.text = $"{Mathf.RoundToInt(current)} / {Mathf.RoundToInt(max)}";
     }
 
     private void BindPlayer()

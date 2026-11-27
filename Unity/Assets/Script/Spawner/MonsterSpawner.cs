@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// Object pool: monsters are never destroyed mid-wave, only deactivated and reused.
 public class MonsterSpawner : MonoBehaviour
 {
     private const float SpawnInterval = 0.5f;
@@ -11,7 +10,6 @@ public class MonsterSpawner : MonoBehaviour
     private const int MaxSpawnCount = 3;
     private const float SpawnDistanceZ = 25f;
 
-    // Intentional 1:1 port of the UE5 reference's near-zero lateral spread quirk (was ±1cm there).
     private const float SpawnRangeX = 0.01f;
 
     private readonly List<Monster> _pooledMonsters = new List<Monster>();
@@ -107,4 +105,4 @@ public class MonsterSpawner : MonoBehaviour
         _activeMonsters.Remove(monster);
         _pooledMonsters.Add(monster);
     }
-}
+}// end class

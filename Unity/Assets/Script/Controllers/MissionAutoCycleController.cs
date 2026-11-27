@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// Debug/demo tool: cycles NPC-contact -> Agree -> minigame -> result-confirm with no human input.
-/// Drives the mission through public MissionManager methods; only movement, NPC lookup and the survival-time override are handled here directly.
 public class MissionAutoCycleController
 {
     private const float AutoApproachMoveSpeed = 6.5f;
@@ -67,8 +65,6 @@ public class MissionAutoCycleController
         StartApproachingTargetNpc();
     }
 
-    /// Releases manual control back to the player and stops listening for mission state changes.
-    /// Called both when F8 is pressed again mid-cycle and when the cycle finishes on its own.
     private void StopAutoCycle()
     {
         StopApproachingTargetNpc();

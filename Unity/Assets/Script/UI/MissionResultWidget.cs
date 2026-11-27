@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// One widget reused for both Succeeded and Failed outcomes (only the title text swaps).
 public class MissionResultWidget : BaseWidget
 {
     public Text titleText;
@@ -19,4 +18,4 @@ public class MissionResultWidget : BaseWidget
     {
         titleText.text = state == MissionState.Succeeded ? MissionText.MissionSuccess : MissionText.MissionFailed;
     }
-}
+}// end class

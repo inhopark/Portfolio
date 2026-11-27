@@ -8,8 +8,6 @@ class AMissionSystemCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDefenseMinigameSurvived);
 
-// 디펜스 미니게임(몬스터 스폰 + 생존 타이머)의 시작/종료만을 전담하는 컨트롤러.
-// UMissionManager가 미션 상태 전이에만 집중할 수 있도록 몬스터/타이머 관련 책임을 분리함(SRP).
 UCLASS()
 class MISSIONSYSTEM_API UDefenseMinigameController : public UObject
 {
@@ -20,7 +18,6 @@ private:
 	UPROPERTY()
 	AMonsterSpawner* MonsterSpawner = nullptr;
 
-	// 이 시간(초) 동안 생존하면 OnSurvived 브로드캐스트
 	UPROPERTY(EditAnywhere, Category = "Defense")
 	float SurvivalDuration = 30.0f;
 
@@ -33,17 +30,12 @@ public:
 
 public:
 
-	// 몬스터 스폰과 생존 타이머를 시작
-	void Start(AMissionSystemCharacter* Player);
-
-	// 생존 시간을 재정의 (Start() 호출 전에 설정해야 적용됨). 자동 사이클 모드에서
-	// 데모/테스트 목적으로 생존 시간을 단축할 때 사용
 	void SetSurvivalDurationOverride(float NewDuration);
 
-	// 몬스터 스폰과 생존 타이머를 중단 (성공/실패/조기 종료 등 모든 경우에 호출)
+	void Start(AMissionSystemCharacter* Player);
+
 	void Stop();
 
-	// 남은 생존 시간(초). 진행 중이 아니면 음수 반환
 	float GetRemainingTime() const;
 
 	FORCEINLINE float GetTotalDuration() const { return SurvivalDuration; }

@@ -5,7 +5,6 @@
 
 AMissionSystemGameMode::AMissionSystemGameMode()
 {
-	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBlueprintClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
 	if(PlayerPawnBlueprintClass.Class != nullptr)
 	{
